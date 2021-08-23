@@ -367,6 +367,31 @@ namespace DotNetPlease.Helpers
             return metadata?.UnevaluatedValue;
         }
 
+        public static ProjectMetadataElement? FindMetadata(this ProjectItemElement element, string metadataName)
+        {
+            return element.Metadata.FirstOrDefault(x => x.Name == metadataName);
+        }
+        
+        public static string? GetMetadataValue(this ProjectItemElement element, string metadataName)
+        {
+            return element.FindMetadata(metadataName)?.Value;
+        }
+
+        public static void SetMetadataValue(
+            this ProjectItemElement element,
+            string metadataName,
+            string? metadataValue,
+            bool expressAsAttribute = false)
+        {
+            var metadata = element.FindMetadata(metadataName);
+            if (metadata?.Value == metadataValue) return;
+            metadata?.Parent.RemoveChild(metadata);
+            if (metadataValue != null)
+            {
+                element.AddMetadata(metadataName, metadataValue, expressAsAttribute);
+            }
+        }
+
         private static bool _msBuildLocated;
 
         public static void LocateMSBuild()
