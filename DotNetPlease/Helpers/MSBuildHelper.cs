@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
 namespace DotNetPlease.Helpers
@@ -256,6 +257,22 @@ namespace DotNetPlease.Helpers
                 projectOptions);
         }
 
+        public static Project LoadProjectFromXmlString(string xml, ProjectOptions? projectOptions = null)
+        {
+            projectOptions ??= new ProjectOptions
+            {
+                LoadSettings = ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.IgnoreInvalidImports,
+                ProjectCollection = new ProjectCollection()
+            };
+
+            return Project.FromProjectRootElement(
+                ProjectRootElement.Create(
+                    XmlReader.Create(new StringReader(xml)),
+                    projectOptions.ProjectCollection,
+                    preserveFormatting: true),
+                projectOptions);
+        }
+
         public static List<Project> LoadProjects(
             IEnumerable<string> fileNames,
             ProjectCollection? projectCollection = null)
@@ -361,10 +378,51 @@ namespace DotNetPlease.Helpers
             return FindPackageReference(project, packageId);
         }
 
+        public static void RemoveChildren(this ProjectElementContainer container, IEnumerable<ProjectElement> elements)
+        {
+            foreach (var element in elements)
+            {
+                container.RemoveChild(element);
+            }
+        }
+        
+        public static void AddChildren(this ProjectElementContainer container, IEnumerable<ProjectElement> elements)
+        {
+            foreach (var element in elements)
+            {
+                container.AppendChild(element);
+            }
+        }
+        
         public static string? GetUnevaluatedMetadataValue(this ProjectItem item, string metadataName)
         {
             var metadata = item.GetMetadata(metadataName);
             return metadata?.UnevaluatedValue;
+        }
+
+        public static ProjectMetadataElement? FindMetadata(this ProjectItemElement element, string metadataName)
+        {
+            return element.Metadata.FirstOrDefault(x => x.Name == metadataName);
+        }
+        
+        public static string? GetMetadataValue(this ProjectItemElement element, string metadataName)
+        {
+            return element.FindMetadata(metadataName)?.Value;
+        }
+
+        public static void SetMetadataValue(
+            this ProjectItemElement element,
+            string metadataName,
+            string? metadataValue,
+            bool expressAsAttribute = false)
+        {
+            var metadata = element.FindMetadata(metadataName);
+            if (metadata?.Value == metadataValue) return;
+            metadata?.Parent.RemoveChild(metadata);
+            if (metadataValue != null)
+            {
+                element.AddMetadata(metadataName, metadataValue, expressAsAttribute);
+            }
         }
 
         private static bool _msBuildLocated;
