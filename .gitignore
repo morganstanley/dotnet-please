@@ -361,3 +361,4 @@ MigrationBackup/
 Doom/Properties/launchSettings.json
 DotNetPlease/Properties/launchSettings.json
 DotNetPlease/nupkg/
+.idea/.idea.DotNetPlease/.idea/workspace.xml
