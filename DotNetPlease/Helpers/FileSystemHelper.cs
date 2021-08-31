@@ -44,7 +44,35 @@ namespace DotNetPlease.Helpers
                 File.Copy(fileName, destFileName, overwrite: true);
             }
         }
+        
+        /// <summary>
+        /// Find a file closest to the working directory in the directory tree (like Directory.Build.props)
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static string? GetFilePathAbove(string fileName)
+        {
+            return GetFilePathAbove(fileName, Directory.GetCurrentDirectory());
+        }
 
+        /// <summary>
+        /// Find a file closest to the specified directory in the directory tree (like Directory.Build.props)
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="directoryPath"></param>
+        /// <returns></returns>
+        public static string? GetFilePathAbove(string fileName, string directoryPath)
+        {
+            while (directoryPath != null!)
+            {
+                var localFilePath = Path.Combine(directoryPath, fileName);
+                if (File.Exists(localFilePath)) return localFilePath;
+                directoryPath = Path.GetDirectoryName(directoryPath)!;
+            }
+
+            return null;
+        }
+        
         private class PathComparerImpl : StringComparer
         {
             public override int Compare(string? x, string? y)

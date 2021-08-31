@@ -110,6 +110,34 @@ to replace the property names with actual versions:
 please consolidate packages --explicit
 ```
 
+### Manage package versions centrally
+
+A set of commands are continually added to support centrally managed NuGet package versions
+(see https://github.com/NuGet/Home/wiki/Centrally-managing-NuGet-package-versions).
+
+#### Move explicit versions to a central file
+
+Use the `pull-package-versions` command to pull explicit package versions from projects into
+a central packages file.
+
+```
+please pull package versions Dependencies.props
+```
+
+This command will 
+1. scan all the projects in the solution, extract and remove any explicit `Version` attributes from
+`PackageReference` items
+2. update the specified `.props` file, add the missing `PackageVersion` items with the extracted versions.
+
+When the file name is omitted, `dotnet-please` will try to find a `Directory.Packages.props` file
+in the directory tree (to conform with the original NuGet proposal).
+
+It is also possible to update the existing `PackageVersion` items if some projects reference newer versions:
+
+```
+please pull package versions --update
+```
+
 ### Move/rename projects
 
 To rename or move a project while fixing the solution file and any project references:
