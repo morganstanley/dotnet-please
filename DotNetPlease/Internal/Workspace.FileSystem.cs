@@ -144,6 +144,7 @@ namespace DotNetPlease.Internal
 
             try
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(newPath));
                 Directory.Move(oldPath, newPath);
                 Reporter.Success($"{completedVerb} \"{oldRelativePath}\" to \"{newNameOrRelativePath}\"");
                 return true;

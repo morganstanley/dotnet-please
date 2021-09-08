@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
 namespace DotNetPlease.Helpers
@@ -28,10 +27,11 @@ namespace DotNetPlease.Helpers
 
         public static bool IsSamePath(string path1, string path2)
         {
-            return string.Equals(NormalizePath(path1), NormalizePath(path2), StringComparison.OrdinalIgnoreCase);
+            return PathComparer.Equals(path1, path2);
         }
 
-        public static string NormalizePath(string? path) => DirectorySeparatorRegex.Replace(path ?? "", "/").TrimEnd('/');
+        public static string NormalizePath(string? path) =>
+            DirectorySeparatorRegex.Replace(path ?? "", "/").TrimEnd('/');
 
         public static readonly StringComparer PathComparer = new PathComparerImpl();
 
@@ -58,7 +58,7 @@ namespace DotNetPlease.Helpers
                 File.Copy(fileName, destFileName, overwrite: true);
             }
         }
-        
+
         /// <summary>
         /// Find a file closest to the working directory in the directory tree (like Directory.Build.props)
         /// </summary>
@@ -86,14 +86,17 @@ namespace DotNetPlease.Helpers
 
             return null;
         }
-        
+
         private class PathComparerImpl : StringComparer
         {
             public override int Compare(string? x, string? y)
             {
                 if (string.IsNullOrWhiteSpace(x) && string.IsNullOrWhiteSpace(y))
                     return 0;
-                return string.Compare(NormalizePath(x), NormalizePath(y), StringComparison.OrdinalIgnoreCase);
+                return string.Compare(
+                    Path.GetFullPath(NormalizePath(x)), 
+                    Path.GetFullPath(NormalizePath(y)),
+                    StringComparison.OrdinalIgnoreCase);
             }
 
             public override bool Equals(string? x, string? y)
@@ -102,14 +105,18 @@ namespace DotNetPlease.Helpers
                     return string.IsNullOrWhiteSpace(y);
                 if (string.IsNullOrWhiteSpace(y))
                     return false;
-                return IsSamePath(x, y);
+
+                return string.Equals(
+                    Path.GetFullPath(NormalizePath(x)),
+                    Path.GetFullPath(NormalizePath(y)),
+                    StringComparison.OrdinalIgnoreCase);
             }
 
             public override int GetHashCode(string obj)
             {
                 if (string.IsNullOrWhiteSpace(obj))
                     return 0;
-                obj = NormalizePath(obj);
+                obj = Path.GetFullPath(NormalizePath(obj));
                 return obj.GetHashCode(StringComparison.OrdinalIgnoreCase);
             }
         }

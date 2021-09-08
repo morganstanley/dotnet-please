@@ -21,36 +21,50 @@ namespace DotNetPlease.Helpers
 
     public class FileSystemHelperTests
     {
-        [Fact]
-        public void IsSamePath_ignores_casing()
+        [Theory]
+        [InlineData("foo/bar", "Foo/BAR")]
+        public void IsSamePath_ignores_casing(string path1, string path2)
         {
-            IsSamePath("foo/bar", "Foo/BAR").Should().BeTrue();
+            IsSamePath(path1, path2).Should().BeTrue();
         }
 
-        [Fact]
-        public void IsSamePath_ignores_differences_in_path_separator()
+        [Theory]
+        [InlineData("foo/bar", "foo\\bar")]
+        public void IsSamePath_ignores_differences_in_path_separator(string path1, string path2)
         {
-            IsSamePath("foo/bar", "foo\\bar").Should().BeTrue();
+            IsSamePath(path1, path2).Should().BeTrue();
         }
 
-        [Fact]
-        public void IsSamePath_ignores_differences_in_trailing_path_separator()
+        [Theory]
+        [InlineData("foo/bar", "foo/bar/")]
+        [InlineData("foo/bar", "foo/bar\\")]
+        public void IsSamePath_ignores_differences_in_trailing_path_separator(string path1, string path2)
         {
-            IsSamePath("foo/bar", "foo/bar/").Should().BeTrue();
-            IsSamePath("foo/bar", "foo/bar\\").Should().BeTrue();
+            IsSamePath(path1, path2).Should().BeTrue();
         }
 
-        [Fact]
-        public void NormalizePath_replaces_backslash_with_forward_slash()
+        [Theory]
+        [InlineData("foo/bar/..", "foo")]
+        [InlineData("foo/bar/./baz", "foo/bar/baz")]
+        [InlineData("./foo/bar", "foo/bar")]
+        public void IsSamePath_ignores_redundant_relative_jumps(string path1, string path2)
         {
-            NormalizePath("foo\\bar/baz").Should().Be("foo/bar/baz");
+            IsSamePath(path1, path2).Should().BeTrue();
         }
 
-        [Fact]
-        public void NormalizePath_removes_trailing_path_separator()
+        [Theory]
+        [InlineData("foo\\bar/baz", "foo/bar/baz")]
+        public void NormalizePath_replaces_backslash_with_forward_slash(string oldPath, string newPath)
         {
-            NormalizePath("foo/bar/").Should().Be("foo/bar");
-            NormalizePath("foo\\bar\\").Should().Be("foo/bar");
+            NormalizePath(oldPath).Should().Be(newPath);
+        }
+
+        [Theory]
+        [InlineData("foo/bar/", "foo/bar")]
+        [InlineData("foo\\bar\\", "foo/bar")]
+        public void NormalizePath_removes_trailing_path_separator(string oldPath, string newPath)
+        {
+            NormalizePath(oldPath).Should().Be(newPath);
         }
     }
 }
