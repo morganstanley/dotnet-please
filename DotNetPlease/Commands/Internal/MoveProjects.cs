@@ -162,12 +162,14 @@ namespace DotNetPlease.Commands.Internal
             private void ReplaceProjectsInSolution(
                 Context context)
             {
-                if (context.Command.SolutionFileName == null
-                    || !string.Equals(".sln", Path.GetExtension(context.Command.SolutionFileName), StringComparison.OrdinalIgnoreCase))
+                var solutionFileName = context.Command.SolutionFileName ?? Workspace.FindSolutionFileName();
+
+                if (solutionFileName == null
+                    || !string.Equals(".sln", Path.GetExtension(solutionFileName), StringComparison.OrdinalIgnoreCase))
                     return;
-                using (Reporter.BeginScope($"Solution: {context.Command.SolutionFileName}"))
+                using (Reporter.BeginScope($"Solution: {solutionFileName}"))
                 {
-                    var solutionFileName = Workspace.GetFullPath(context.Command.SolutionFileName);
+                    solutionFileName = Workspace.GetFullPath(solutionFileName);
                     // TODO: a .sln parser/DOM would be nice here
                     // TODO: detect encoding
                     var encoding = Encoding.UTF8;
