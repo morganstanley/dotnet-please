@@ -17,7 +17,7 @@
         public static class SolutionFileName
         {
             public const string Description =
-                "The solution file name (defaults to the solution in the working directory, or the working directory itself)";
+                "The solution file name (defaults to the solution in the working directory, if there is one)";
         }
 
         public static class RequiredSolutionFileName

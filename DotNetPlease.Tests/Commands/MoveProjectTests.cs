@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,18 +16,23 @@ namespace DotNetPlease.Commands
     public class MoveProjectTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_moves_project_file_and_directory(bool stage)
+        public async Task It_moves_project_file_and_directory(bool moveOutsideOfRootDirectory, bool stage)
         {
-            var originalProjectFileName = GetFullPath("OriginalProjectDirectory/OriginalProjectName.csproj");
-            CreateProject(originalProjectFileName);
-            var newProjectFileName = GetFullPath("NewProjectDirectory/NewProjectName.csproj");
+            var originalRelativePath = "OriginalProjectDirectory/OriginalProjectName.csproj";
+            var originalFullPath = GetFullPath(originalRelativePath);
+            CreateProject(originalFullPath);
+
+            var newRelativePath = moveOutsideOfRootDirectory 
+                ? $"../{Guid.NewGuid()}/NewSolution/NewProjectDirectory/NewProjectName.csproj"
+                : "NewProjectDirectory/NewProjectName.csproj";
+            var newFullPath = GetFullPath(newRelativePath);
 
             if (stage) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "move-project",
-                "OriginalProjectDirectory/OriginalProjectName.csproj",
-                "NewProjectDirectory/NewProjectName.csproj",
+                originalRelativePath,
+                newRelativePath,
                 StageOption(stage));
 
             if (stage)
@@ -35,27 +41,31 @@ namespace DotNetPlease.Commands
                 return;
             }
 
-            File.Exists(newProjectFileName).Should().BeTrue();
-            File.Exists(originalProjectFileName).Should().BeFalse();
-            Directory.Exists(Path.GetDirectoryName(originalProjectFileName)).Should().BeFalse();
+            File.Exists(newFullPath).Should().BeTrue();
+            File.Exists(originalFullPath).Should().BeFalse();
+            Directory.Exists(Path.GetDirectoryName(originalFullPath)).Should().BeFalse();
         }
 
         [Theory, CombinatorialData]
-        public async Task It_replaces_the_project_in_the_solution_file(bool stage)
+        public async Task It_replaces_the_project_in_the_solution_file(bool moveOutsideOfRootDirectory, bool stage)
         {
             var solutionFileName = GetFullPath("Test.sln");
             CreateSolution(solutionFileName);
-            var originalProjectFileName = GetFullPath("OriginalProjectDirectory/OriginalProjectName.csproj");
-            CreateProject(originalProjectFileName);
-            AddProjectToSolution(originalProjectFileName, solutionFileName);
-            var newProjectFileName = GetFullPath("NewProjectDirectory/NewProjectName.csproj");
+            var originalRelativePath = "OriginalProjectDirectory/OriginalProjectName.csproj";
+            var originalFullPath = GetFullPath(originalRelativePath);
+            CreateProject(originalFullPath);
+            AddProjectToSolution(originalFullPath, solutionFileName);
+            var newRelativePath = moveOutsideOfRootDirectory
+                ? $"../{Guid.NewGuid()}/NewSolution/NewProjectDirectory/NewProjectName.csproj"
+                : "NewProjectDirectory/NewProjectName.csproj";
+            var newFullPath = GetFullPath(newRelativePath);
 
             if (stage) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "move-project",
-                "OriginalProjectDirectory/OriginalProjectName.csproj",
-                "NewProjectDirectory/NewProjectName.csproj",
+                originalRelativePath,
+                newRelativePath,
                 "Test.sln",
                 StageOption(stage));
 
@@ -66,30 +76,35 @@ namespace DotNetPlease.Commands
             }
 
             var solution = LoadAndValidateSolution(solutionFileName);
-            var project = solution.ProjectsInOrder.FirstOrDefault(p => IsSamePath(p.AbsolutePath, newProjectFileName));
+            var project = solution.ProjectsInOrder.FirstOrDefault(p => IsSamePath(p.AbsolutePath, newFullPath));
             project.Should().NotBeNull();
             var oldProject =
-                solution.ProjectsInOrder.FirstOrDefault(p => IsSamePath(p.AbsolutePath, originalProjectFileName));
+                solution.ProjectsInOrder.FirstOrDefault(p => IsSamePath(p.AbsolutePath, originalFullPath));
             oldProject.Should().BeNull();
         }
 
         [Theory, CombinatorialData]
-        public async Task It_fixes_ProjectReferences(bool stage)
+        public async Task It_fixes_ProjectReferences(bool moveOutsideOfRootDirectory, bool stage)
         {
-            var originalProjectFileName = GetFullPath("OriginalProject/OriginalProject.csproj");
-            CreateProject(originalProjectFileName);
-            var referencedProjectFileName = GetFullPath("OtherProject/OtherProject.csproj");
-            CreateProject(referencedProjectFileName);
-            AddProjectReference(originalProjectFileName, referencedProjectFileName);
-            AddProjectReference(referencedProjectFileName, originalProjectFileName);
-            var newProjectFileName = GetFullPath("NewProjectDirectory/NewProjectName.csproj");
+            var originalRelativePath = "OriginalProject/OriginalProject.csproj";
+            var originalFullPath = GetFullPath(originalRelativePath);
+            CreateProject(originalFullPath);
+            var originalReferencePath = "OtherProject/OtherProject.csproj";
+                var referenceFullPath = GetFullPath(originalReferencePath);
+            CreateProject(referenceFullPath);
+            AddProjectReference(originalFullPath, referenceFullPath);
+            AddProjectReference(referenceFullPath, originalFullPath);
+            var newRelativePath = moveOutsideOfRootDirectory
+                ? $"../{Guid.NewGuid()}/NewSolution/NewProjectDirectory/NewProjectName.csproj"
+                : "NewProjectDirectory/NewProjectName.csproj";
+            var newFullPath = GetFullPath(newRelativePath);
 
             if (stage) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "move-project",
-                "OriginalProject/OriginalProject.csproj",
-                "NewProjectDirectory/NewProjectName.csproj",
+                originalRelativePath,
+                newRelativePath,
                 StageOption(stage));
 
             if (stage)
@@ -98,9 +113,9 @@ namespace DotNetPlease.Commands
                 return;
             }
 
-            FindProjectReference(newProjectFileName, referencedProjectFileName).Should().NotBeNull();
-            FindProjectReference(referencedProjectFileName, newProjectFileName).Should().NotBeNull();
-            FindProjectReference(referencedProjectFileName, originalProjectFileName).Should().BeNull();
+            FindProjectReference(newFullPath, referenceFullPath).Should().NotBeNull();
+            FindProjectReference(referenceFullPath, newFullPath).Should().NotBeNull();
+            FindProjectReference(referenceFullPath, originalFullPath).Should().BeNull();
         }
 
         public MoveProjectTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
