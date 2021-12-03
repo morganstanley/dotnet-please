@@ -351,15 +351,17 @@ namespace DotNetPlease.Helpers
             project.Save();
         }
 
-        public static void AddPackageReference(Project project, string packageId, string version)
+        public static void AddPackageReference(Project project, string packageId, string? version)
         {
             project.AddItemFast(
                 "PackageReference",
                 packageId,
-                new[] { new KeyValuePair<string, string>("Version", version) });
+                version != null 
+                    ? new[] { new KeyValuePair<string, string>("Version", version) }
+                    : null);
         }
 
-        public static void AddPackageReference(string projectFileName, string packageId, string version)
+        public static void AddPackageReference(string projectFileName, string packageId, string? version)
         {
             var project = LoadProjectFromFile(projectFileName);
             AddPackageReference(project, packageId, version);
@@ -399,7 +401,7 @@ namespace DotNetPlease.Helpers
                 container.RemoveChild(element);
             }
         }
-        
+
         public static void AddChildren(this ProjectElementContainer container, IEnumerable<ProjectElement> elements)
         {
             foreach (var element in elements)
@@ -407,7 +409,7 @@ namespace DotNetPlease.Helpers
                 container.AppendChild(element);
             }
         }
-        
+
         public static string? GetUnevaluatedMetadataValue(this ProjectItem item, string metadataName)
         {
             var metadata = item.GetMetadata(metadataName);
@@ -418,7 +420,7 @@ namespace DotNetPlease.Helpers
         {
             return element.Metadata.FirstOrDefault(x => x.Name == metadataName);
         }
-        
+
         public static string? GetMetadataValue(this ProjectItemElement element, string metadataName)
         {
             return element.FindMetadata(metadataName)?.Value;
