@@ -1,20 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30413.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetPlease", "DotNetPlease\DotNetPlease.csproj", "{4D987BCB-1C2B-4648-8632-1DAC84D7A844}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetPlease.Tests", "DotNetPlease.Tests\DotNetPlease.Tests.csproj", "{442E11A4-F6E2-4AA0-A86A-64C468F5412C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{515E17A9-0C5F-44DC-B7CA-80A913A480DD}"
-ProjectSection(SolutionItems) = preProject
-	README.md = README.md
-	CONTRIBUTING.md = CONTRIBUTING.md
-	DISCLAIMER = DISCLAIMER
-	LICENSE = LICENSE
-	NOTICE = NOTICE
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		CONTRIBUTING.md = CONTRIBUTING.md
+		DISCLAIMER = DISCLAIMER
+		GitVersion.yml = GitVersion.yml
+		LICENSE = LICENSE
+		NOTICE = NOTICE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
