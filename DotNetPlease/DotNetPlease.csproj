@@ -10,6 +10,7 @@
 		<Description>dotnet-please global tool for streamlining repetitive tasks around Visual Studio projects and solutions.</Description>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
