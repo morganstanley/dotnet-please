@@ -10,16 +10,31 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
+    
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: '3.1.x'
+        
     - name: Restore dependencies
       run: dotnet restore
+      
     - name: Build
       run: dotnet build --no-restore
+      
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      
+    - name: Pack
+      run: dotnet pack --no-build --output packages
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: nupkg
+        path: packages/*.nupkg
