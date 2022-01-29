@@ -22,13 +22,13 @@ jobs:
       run: dotnet restore --locked-mode
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration Release
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --configuration Release --verbosity normal
       
     - name: Pack
-      run: dotnet pack --no-build --output packages
+      run: dotnet pack --no-build --configuration Release --output packages
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
