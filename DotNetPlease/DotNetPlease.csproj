@@ -16,7 +16,12 @@
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>please</ToolCommandName>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="GitVersion.MsBuild" Version="5.8.1">

@@ -70,6 +70,7 @@ namespace DotNetPlease
 
         private Parser BuildCommandLineParser()
         {
+            _rootCommand.Name = "please";
             return new CommandLineBuilder(_rootCommand)
                 .ParseResponseFileAs(ResponseFileHandling.ParseArgsAsSpaceSeparated)
                 .AddGlobalOption(_stageOption)
