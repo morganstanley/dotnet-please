@@ -10,13 +10,18 @@
 		<Description>dotnet-please global tool for streamlining repetitive tasks around Visual Studio projects and solutions.</Description>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>please</ToolCommandName>
-		<PackageOutputPath>./bin/nupkg</PackageOutputPath>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="GitVersion.MsBuild" Version="5.8.1">

@@ -13,6 +13,7 @@
  */
 
 using System;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,6 +25,7 @@ namespace DotNetPlease
         {
             Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine("dotnet-please from Morgan Stanley");
+            Console.WriteLine(GitVersionInformation.NuGetVersionV2);
             Console.WriteLine("Visit us at https://github.com/morganstanley");
             Console.WriteLine();
             try
