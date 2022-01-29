@@ -16,7 +16,6 @@
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>please</ToolCommandName>
-		<PackageOutputPath>./bin/nupkg</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

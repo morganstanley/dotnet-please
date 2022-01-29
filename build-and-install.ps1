@@ -13,6 +13,6 @@ else {
     $toolScope = '--global'
 }
 
-dotnet build -c:Release DotNetPlease.sln
-dotnet pack --no-build -c:Release DotNetPlease.sln
-dotnet tool update $toolScope $toolPath --add-source DotNetPlease/bin/nupkg MorganStanley.DotNetPlease
+dotnet build --configuration Release DotNetPlease.sln
+dotnet pack --no-build --configuration Release --output ./packages  DotNetPlease.sln
+dotnet tool update $toolScope $toolPath --add-source ./packages MorganStanley.DotNetPlease

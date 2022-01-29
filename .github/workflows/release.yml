@@ -20,6 +20,6 @@ jobs:
           path: ./packages
       
       - name: Publish
-        run: dotnet nuget push ./packages/*.nupkg --no-symbols --source https://nuget.pkg.github.com/MorganStanley/index.json --api-key ${GITHUB_TOKEN}
+        run: dotnet nuget push ./packages/*.nupkg --no-symbols --source https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
