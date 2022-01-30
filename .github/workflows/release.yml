@@ -20,6 +20,6 @@ jobs:
           path: ./packages
       
       - name: Publish
-        run: dotnet nuget push "./packages/*.nupkg" --no-symbols --source "https://api.nuget.org/v3/index.json" --api-key "${NUGET_API_KEY}"
+        run: dotnet nuget push "./packages/*.nupkg" --no-symbols true --source "https://api.nuget.org/v3/index.json" --api-key "${NUGET_API_KEY}"
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_KEY }}
