@@ -10,13 +10,19 @@ the tool is meant for SDK-style project files.
 
 ## Installation
 
-To install `please` as a global dotnet tool, clone the repo and run the `build-and-install.ps1` script.
+To install `please` as a global dotnet tool:
+```console
+dotnet tool install -g MorganStanley.DotNetPlease
+```
+
+Alternatively, you can just clone the repo and run the `build-and-install.ps1` script.
+
 If you install dotnet tools to a custom folder, either pass 
 the folder to the script, or create an environment variable called `DotNetToolsPath`.
 
 Then to get the list of available commands:
 
-```
+```console
 please --help
 ```
 
@@ -31,11 +37,11 @@ Most commands have a `--stage` option to just list what the command would do,
 but we strongly advise to back up/commit your code before pleasing your projects.
 
 To get a complete list of options and arguments for each command, run
-```
+```console
 please --help
 ```
 or
-```
+```console
 please <command> --help
 ```
 
@@ -46,19 +52,19 @@ please <command> --help
 
 Consolidate all NuGet package references in the solution to the highest version used:
 
-```
+```console
 please consolidate packages
 ```
 
 Limit the command to specific packages:
 
-```
+```console
 please consolidate packages --package Microsoft.Extensions.*
 ```
 
 Set a specific version number (must be used with `--package`):
 
-```
+```console
 please consolidate packages --package Microsoft.Extensions.* --version 3.1.3
 ```
 
@@ -94,7 +100,7 @@ In the project file:
 
 Use `please` to update all package references and the .props file:
 
-```
+```console
 please consolidate packages --props Dependencies.props
 ```
 
@@ -106,7 +112,7 @@ and your references will be consistent.
 In case you want to back out from using a .props file, use the `--explicit` option
 to replace the property names with actual versions:
 
-```
+```console
 please consolidate packages --explicit
 ```
 
@@ -120,7 +126,7 @@ A set of commands are continually added to support centrally managed NuGet packa
 Use the `pull-package-versions` command to pull explicit package versions from projects into
 a central packages file.
 
-```
+```console
 please pull package versions Dependencies.props
 ```
 
@@ -134,7 +140,7 @@ in the directory tree (to conform with the original NuGet proposal).
 
 It is also possible to update the existing `PackageVersion` items if some projects reference newer versions:
 
-```
+```console
 please pull package versions --update
 ```
 
@@ -142,20 +148,20 @@ please pull package versions --update
 
 To rename or move a project while fixing the solution file and any project references:
 
-```
+```console
 please move project Old/Path/OldProjectName.csproj New/Path/NewProjectName.csproj
 ```
 
 To just rename a project (by renaming the .csproj file and its directory):
 
-```
+```console
 please move project OldProjectName NewProjectName
 ```
 
 You can also rename projects in bulk (eg. when trying to change the root namespace of
 your 100-project solution):
 
-```
+```console
 please change namespace Old.Namespace New.Namespace
 ```
 
@@ -163,7 +169,7 @@ please change namespace Old.Namespace New.Namespace
 
 Having a hard time fixing a broken solution after moving projects manually?
 
-```
+```console
 please fix project references
 ```
 
@@ -175,7 +181,7 @@ if that fails.
 
 To remove any code files that were explicitly excluded with a `<Complile Remove="..."/>` item:
 
-```
+```console
 please cleanup project files
 ```
 
@@ -185,7 +191,7 @@ Use the `--allow-globs` option to remove files that were excluded with a globbin
 
 To list projects that are not included in the solution, run:
 
-```
+```console
 please find stray projects
 ```
 
@@ -193,7 +199,7 @@ please find stray projects
 
 Delete those magic folders after a table-flipping Visual Studio experience:
 
-```
+```console
 please remove junk --bin --suo --testStore
 ```
 
@@ -203,19 +209,19 @@ please remove junk --bin --suo --testStore
 
 To quickly append the working directory to the user's `PATH` variable, run
 
-```
+```console
 please add to path
 ```
 
 Conversely, you can remove the working directory from `PATH`:
 
-```
+```console
 please remove from path
 ```
 
 You can also specify the directory to add or remove, relative to the working directory:
 
-```
+```console
 please add to path some/relative/path
 ```
 
@@ -224,6 +230,6 @@ please add to path some/relative/path
 This can be useful when troubleshooting build errors. To load, evaluate and list all the properties  
 in a project file with their unevaluated and evaluated values:
 
-```
+```console
 please evaluate props MyProject.csproj
 ```
