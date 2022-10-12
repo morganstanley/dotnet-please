@@ -222,8 +222,7 @@ namespace DotNetPlease.Commands
                 {
                     packageReference.Xml.AddMetadata("Version", "", true);
                     packageReference.Project.ReevaluateIfNecessary();
-                    versionAttribute = versionAttribute =
-                        packageReference.Metadata.FirstOrDefault(x => x.Name == "Version");
+                    versionAttribute = packageReference.Metadata.FirstOrDefault(x => x.Name == "Version");
                     if (versionAttribute == null)
                     {
                         Reporter.Error($"Invalid PackageReference \"{packageName}\"");
