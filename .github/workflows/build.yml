@@ -28,7 +28,7 @@ jobs:
       run: dotnet test --no-build --configuration Release --verbosity normal
       
     - name: Pack
-      run: dotnet pack --no-build --configuration Release --output packages
+      run: dotnet pack --no-build --configuration Release --property:PackageOutputPath=packages
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
