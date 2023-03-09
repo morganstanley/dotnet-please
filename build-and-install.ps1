@@ -14,5 +14,9 @@ else {
 }
 
 dotnet build --configuration Release DotNetPlease.sln
-dotnet pack --no-build --configuration Release --output ./packages  DotNetPlease.sln
-dotnet tool update $toolScope $toolPath --add-source ./packages MorganStanley.DotNetPlease
+Remove-Item -Recurse -Path ./packages
+dotnet pack --no-build --configuration Release DotNetPlease.sln
+$nupkg = Get-ChildItem -Filter packages/*.nupkg | Select-Object -First 1
+$packageName = "MorganStanley.DotNetPlease"
+$version = $nupkg.Name.Substring($packageName.Length + 1, $nupkg.Name.Length - $packageName.Length - 1 - ".nupkg".Length)
+dotnet tool update $toolScope $toolPath --add-source ./packages MorganStanley.DotNetPlease --version $version
