@@ -1,0 +1,6 @@
+<Project>
+   <PropertyGroup>
+      <SolutionRoot>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</SolutionRoot>
+      <PackageOutputPath>$(SolutionRoot)/packages</PackageOutputPath>
+   </PropertyGroup>
+</Project>

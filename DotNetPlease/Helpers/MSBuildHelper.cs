@@ -15,13 +15,18 @@
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Locator;
 using Microsoft.Extensions.FileSystemGlobbing;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Xml;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
@@ -446,7 +451,24 @@ namespace DotNetPlease.Helpers
         public static void LocateMSBuild()
         {
             if (_msBuildLocated) return;
-            MSBuildLocator.RegisterDefaults();
+
+            var sdkList = ProcessHelper.Run("dotnet", "--list-sdks");
+
+            var sdks = Regex.Matches(sdkList, @"([\d\.]+) *\[(.*)\]")
+                .Select(
+                    m => new
+                    {
+                        Version = new Version(m.Groups[1].Value),
+                        Path = Path.Combine(m.Groups[2].Value, m.Groups[1].Value)
+                    })
+                .OrderBy(x => x.Version)
+                .ToList();
+
+            // TODO: Check global.json and use specific SDK?
+            var sdk = sdks.LastOrDefault();
+            if (sdk == null) throw new InvalidOperationException("Could not locate the .NET SDK");
+            Environment.SetEnvironmentVariable("MSBuildSDKsPath", Path.Combine(sdk.Path, "Sdks"));
+            Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(sdk.Path, "MSBuild.dll"));
             _msBuildLocated = true;
         }
 
