@@ -202,6 +202,58 @@ namespace DotNetPlease.Helpers
             return RemoveProjectsInExcludedProjectDirectories(projects);
         }
 
+        public static List<ProjectInfo> GetProjectInfosFromGlob(
+            string pattern,
+            string? workingDirectory = null,
+            bool allowSolutions = true)
+        {
+            if (pattern == null) throw new ArgumentNullException(nameof(pattern));
+            workingDirectory ??= Directory.GetCurrentDirectory();
+
+            var files = new List<string>();
+
+            var matcher = new Matcher();
+            foreach (var segment in pattern!.Split('|').Select(x => x.Trim()))
+            {
+                if (File.Exists(segment))
+                {
+                    files.Add(segment);
+                }
+                else
+                {
+                    matcher.AddInclude(segment);
+                }
+            }
+
+            files.AddRange(matcher.GetResultsInFullPath(workingDirectory));
+
+            var projects = new List<ProjectInfo>();
+
+            foreach (var fileName in files)
+            {
+                var ext = Path.GetExtension(fileName);
+
+                if (string.Equals(".sln", ext, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (allowSolutions)
+                    {
+                        projects.AddRange(GetProjectsFromSolution(fileName).Select(p => new ProjectInfo(p, fileName)));
+                    }
+                }
+                else if (KnownProjectFileExtensions.Contains(ext))
+                {
+                    projects.Add(new ProjectInfo(fileName));
+                }
+            }
+
+            var includedProjectFileNames =
+                RemoveProjectsInExcludedProjectDirectories(projects.Select(p => p.ProjectFileName).ToList())
+                    .ToHashSet();
+
+            return projects.Where(p => includedProjectFileNames.Contains(p.ProjectFileName)).ToList();
+
+        }
+
         public static List<string> GetProjectsFromDirectory(
             string path,
             bool recursive)
@@ -373,6 +425,20 @@ namespace DotNetPlease.Helpers
             project.Save();
         }
 
+        public static void AddAssemblyReference(Project project, string assemblyName)
+        {
+            project.AddItemFast(
+                "Reference",
+                assemblyName);
+        }
+
+        public static void AddAssemblyReference(string projectFileName, string assemblyName)
+        {
+            var project = LoadProjectFromFile(projectFileName);
+            AddAssemblyReference(project, assemblyName);
+            project.Save();
+        }
+
         public static ProjectItem? FindProjectReference(Project project, string referencedProjectFileName)
         {
             var reference = NormalizePath(
@@ -385,6 +451,18 @@ namespace DotNetPlease.Helpers
         {
             var project = LoadProjectFromFile(projectFileName);
             return FindProjectReference(project, referencedProjectFileName);
+        }
+
+        public static ProjectItem? FindAssemblyReference(Project project, string assemblyName)
+        {
+            return project.AllEvaluatedItems.FirstOrDefault(
+                i => i.ItemType == "Reference" && string.Equals(i.UnevaluatedInclude, assemblyName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static ProjectItem? FindAssemblyReference(string projectFileName, string assemblyName)
+        {
+            var project = LoadProjectFromFile(projectFileName);
+            return FindAssemblyReference(project, assemblyName);
         }
 
         public static ProjectItem? FindPackageReference(Project project, string packageId)
@@ -482,4 +560,6 @@ namespace DotNetPlease.Helpers
             return $".vs/{hiddenDirectoryName}";
         }
     }
+
+    public readonly record struct ProjectInfo(string ProjectFileName, string? SolutionFileName = null);
 }
