@@ -198,6 +198,17 @@ To list projects that are not included in the solution, run:
 please find stray projects
 ```
 
+### Convert package and assembly references to project references
+
+This is useful when debugging and editing a library from within the consuming project.
+The below command will find any `PackageReference` and `Reference` items that refer to
+a project in `Utility.sln` and replace them with a `ProjectReference`. It will also add
+the referenced projects to the current solution.
+
+```console
+please expand references Path/To/Utility.sln
+```
+
 ### Remove junk from the solution directory
 
 Delete those magic folders after a table-flipping Visual Studio experience:
