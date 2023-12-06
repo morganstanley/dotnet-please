@@ -80,7 +80,6 @@ namespace DotNetPlease.Commands
                 "move-project",
                 originalRelativePath,
                 newRelativePath,
-                "Test.sln",
                 StageOption(stage));
 
             if (stage)

@@ -42,9 +42,6 @@ public static class ExpandReferences
     {
         [Argument(0, "The projects or solutions to include")]
         public string ProjectsOrSolutions { get; set; } = null!;
-
-        [Argument(1, CommandArguments.SolutionFileName.Description)]
-        public string? SolutionFileName { get; set; }
     }
 
     [UsedImplicitly]
@@ -294,8 +291,7 @@ public static class ExpandReferences
         {
             return new Context(command)
             {
-                SolutionFileName = Workspace.FindSolutionFileName(command.SolutionFileName)
-                                   ?? throw new ValidationException("Could not find the target solution")
+                SolutionFileName = Workspace.SolutionFileName ?? throw new ValidationException("Could not find the target solution")
             };
         }
 

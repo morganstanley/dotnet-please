@@ -12,6 +12,7 @@
  * and limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.IO;
 
 namespace DotNetPlease.Helpers
@@ -22,29 +23,44 @@ namespace DotNetPlease.Helpers
         {
             var outputDirectory = Path.GetDirectoryName(solutionFileName);
             var solutionName = Path.ChangeExtension(Path.GetFileName(solutionFileName), null);
-            ProcessHelper.Run("dotnet", $"new sln --name \"{solutionName}\" --output \"{outputDirectory}\"");
+
+            ProcessHelper.Run(
+                "dotnet",
+                $"new sln --name \"{solutionName}\" --output \"{outputDirectory}\"",
+                _environmentOverrides);
         }
 
         public static void CreateProject(string projectFileName, string projectTemplateName = "classlib")
         {
             var projectName = Path.ChangeExtension(Path.GetFileName(projectFileName), null);
             var projectDirectory = Path.GetDirectoryName(projectFileName);
+
             ProcessHelper.Run(
                 "dotnet",
-                $"new {projectTemplateName} --name \"{projectName}\" --output \"{projectDirectory}\"");
+                $"new {projectTemplateName} --name \"{projectName}\" --output \"{projectDirectory}\"",
+                _environmentOverrides);
         }
 
         public static void AddProjectToSolution(string projectFileName, string solutionFileName)
         {
-            ProcessHelper.Run("dotnet", $"sln \"{solutionFileName}\" add \"{projectFileName}\"");
+            ProcessHelper.Run("dotnet", $"sln \"{solutionFileName}\" add \"{projectFileName}\"", _environmentOverrides);
         }
 
         public static void AddProjectToSolution(string projectFileName, string solutionFileName, string solutionFolder)
         {
             Directory.CreateDirectory(solutionFolder);
+
             ProcessHelper.Run(
                 "dotnet",
-                $"sln \"{solutionFileName}\" add \"{projectFileName}\" --solution-folder \"{solutionFolder}\"");
+                $"sln \"{solutionFileName}\" add \"{projectFileName}\" --solution-folder \"{solutionFolder}\"",
+                _environmentOverrides);
         }
+
+        private static Dictionary<string, string?> _environmentOverrides = new()
+        {
+            { "MSBUILD_EXE_PATH", null },
+            { "MSBuildLoadMicrosoftTargetsReadOnly", null },
+            { "MSBuildSDKsPath", null },
+        };
     }
 }

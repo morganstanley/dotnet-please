@@ -47,7 +47,7 @@ namespace DotNetPlease
                 .AddTransient<CommandHandlerDependencies>()
                 .AddSingleton<IConsole, SystemConsole>();
             services.TryAddSingleton<IReporter, SystemConsoleReporter>();
-            services.TryAddTransient<Workspace>(p => _workspace!);
+            services.TryAddTransient<Workspace>(_ => _workspace!);
         }
 
         private IServiceProvider BuildServiceProvider(Func<IServiceCollection, IServiceCollection>? overrideServices)
@@ -74,7 +74,15 @@ namespace DotNetPlease
             }
             try
             {
-                return await parser.InvokeAsync(args, scope.ServiceProvider.GetRequiredService<IConsole>());
+                var exitCode = await parser.InvokeAsync(args, scope.ServiceProvider.GetRequiredService<IConsole>());
+
+                return exitCode;
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+
+                return e.HResult;
             }
             finally
             {

@@ -39,9 +39,6 @@ namespace DotNetPlease.Commands
             [Argument(1, "The new project reference (name or relative path)")]
             public string NewProjectName { get; set; } = null!;
 
-            [Argument(2, CommandArguments.SolutionFileName.Description)]
-            public string? SolutionFileName { get; set; }
-
             [Option("--force", "Force delete existing directories")]
             public bool Force { get; set; }
         }
@@ -53,25 +50,25 @@ namespace DotNetPlease.Commands
             {
                 Reporter.Info($"Moving/renaming project \"{command.ProjectName}\" to \"{command.NewProjectName}\"");
 
-                var projectFileName = Workspace.FindProject(command.ProjectName, command.SolutionFileName);
-
-                if (projectFileName == null)
-                {
-                    throw new InvalidOperationException($"Project \"{command.ProjectName}\" not found");
-                }
+                var projectFileName = Workspace.FindProject(command.ProjectName)
+                                      ?? throw new InvalidOperationException($"Project \"{command.ProjectName}\" not found");
 
                 var projectDirectory = Path.GetDirectoryName(projectFileName)!;
                 var projectDirectoryParent = Path.GetDirectoryName(projectDirectory);
                 var projectsInDirectory = GetProjectsFromDirectory(projectDirectory, recursive: false);
+
                 if (projectsInDirectory.Count > 1)
                 {
-                    throw new InvalidOperationException($"Cannot move project because the directory contains multiple project files");
+                    throw new InvalidOperationException(
+                        $"Cannot move project because the directory contains multiple project files");
                 }
 
                 var existingProject = Workspace.FindProject(command.NewProjectName);
+
                 if (existingProject != null)
                 {
-                    throw new InvalidOperationException($"The solution already contains a project at \"{Workspace.GetRelativePath(existingProject)}\"");
+                    throw new InvalidOperationException(
+                        $"The solution already contains a project at \"{Workspace.GetRelativePath(existingProject)}\"");
                 }
 
                 string newProjectFileName;
@@ -79,7 +76,10 @@ namespace DotNetPlease.Commands
                 if (!IsProjectFileName(command.NewProjectName))
                 {
                     var newProjectDirectory = Path.Combine(projectDirectoryParent!, command.NewProjectName);
-                    newProjectFileName = Path.Combine(newProjectDirectory, command.NewProjectName + Path.GetExtension(projectFileName));
+
+                    newProjectFileName = Path.Combine(
+                        newProjectDirectory,
+                        command.NewProjectName + Path.GetExtension(projectFileName));
                 }
                 else
                 {
@@ -91,16 +91,12 @@ namespace DotNetPlease.Commands
                     {
                         new MoveProjects.ProjectMoveItem(projectFileName, newProjectFileName)
                     },
-                    command.SolutionFileName,
                     command.Force);
 
                 return Mediator.Send(moveCommand, cancellationToken);
-
             }
 
-            public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)
-            {
-            }
+            public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies) { }
         }
     }
 }

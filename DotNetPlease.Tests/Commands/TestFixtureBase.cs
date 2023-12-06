@@ -21,27 +21,33 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Xunit;
 using Xunit.Abstractions;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
 namespace DotNetPlease.Commands
-
 {
+    // Tests that change the current directory for the process must not run in parallel.
+    [Collection("cwd")]
     public class TestFixtureBase : IDisposable
     {
         protected readonly string WorkingDirectory;
 
-        protected readonly TestOutputReporter Reporter;
+        protected readonly TestOutputReporter TestOutputReporter;
+        protected readonly TestOutputConsole TestOutputConsole;
 
         public TestFixtureBase(ITestOutputHelper testOutputHelper)
         {
             MSBuildHelper.LocateMSBuild();
-            Reporter = new TestOutputReporter(testOutputHelper);
+            TestOutputReporter = new TestOutputReporter(testOutputHelper);
+            TestOutputConsole = new TestOutputConsole(testOutputHelper);
             WorkingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(WorkingDirectory);
         }
@@ -95,23 +101,35 @@ namespace DotNetPlease.Commands
 
         protected async Task RunAndAssertSuccess(params string[] args)
         {
-            using var app = new App(
-                sc =>
-                {
-                    sc.Replace(new ServiceDescriptor(typeof(IReporter), Reporter));
-                    sc.Replace(
-                        new ServiceDescriptor(
-                            typeof(Workspace),
-                            new Workspace(WorkingDirectory, Reporter, args.Any(a => a == CommandOptions.Stage.Alias))));
-                    return sc;
-                });
-            var exitCode = await app.ExecuteAsync(app.PreprocessArguments(args.Where(a => !string.IsNullOrEmpty(a)).ToArray()));
-            exitCode.Should().Be(0);
+            var oldWorkingDirectory = Directory.GetCurrentDirectory();
+
+            try
+            {
+                Directory.SetCurrentDirectory(WorkingDirectory);
+
+                using var app = new App(
+                    sc =>
+                    {
+                        sc.Replace(new ServiceDescriptor(typeof(IReporter), TestOutputReporter));
+                        sc.Replace(new ServiceDescriptor(typeof(IConsole), TestOutputConsole));
+
+                        return sc;
+                    });
+
+                var exitCode = await app.ExecuteAsync(
+                    app.PreprocessArguments(args.Where(a => !string.IsNullOrEmpty(a)).ToArray()));
+
+                exitCode.Should().Be(0);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(oldWorkingDirectory);
+            }
         }
 
         public void Dispose()
         {
-            (Reporter as IDisposable)?.Dispose();
+            (TestOutputReporter as IDisposable)?.Dispose();
         }
 
         protected string StageOption(bool isStaging) => isStaging ? CommandOptions.Stage.Alias : "";

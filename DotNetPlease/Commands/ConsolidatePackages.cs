@@ -40,9 +40,6 @@ namespace DotNetPlease.Commands
             "Updates PackageReferences to the highest version found in the solution. Does not actually run any nuget commands.")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
-
             [Option(
                 "--props",
                 "The name of an optional .props file where the consolidated versions are saved. If provided, the version numbers in project references are replaced with MSBuild properties")]
@@ -101,7 +98,7 @@ namespace DotNetPlease.Commands
                     context.UseProperties = true;
                 }
 
-                context.Projects = Workspace.LoadProjects(command.Projects);
+                context.Projects = Workspace.LoadProjects();
 
                 foreach (var project in context.Projects)
                 {

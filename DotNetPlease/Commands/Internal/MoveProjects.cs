@@ -34,15 +34,13 @@ namespace DotNetPlease.Commands.Internal
     {
         public class Command : IRequest
         {
-            public Command(List<ProjectMoveItem> moves, string? solutionFileName, bool force)
+            public Command(List<ProjectMoveItem> moves, bool force)
             {
                 Moves = moves;
-                SolutionFileName = solutionFileName;
                 Force = force;
             }
 
             public List<ProjectMoveItem> Moves { get; }
-            public string? SolutionFileName { get; }
             public bool Force { get; }
         }
 
@@ -63,7 +61,7 @@ namespace DotNetPlease.Commands.Internal
         {
             protected override Task Handle(Command command, CancellationToken cancellationToken)
             {
-                var projects = Workspace.LoadProjects(command.SolutionFileName);
+                var projects = Workspace.LoadProjects();
                 var context = new Context(command, projects);
 
                 PreCheck(context);
@@ -176,19 +174,16 @@ namespace DotNetPlease.Commands.Internal
             private void ReplaceProjectsInSolution(
                 Context context)
             {
-                var solutionFileName = context.Command.SolutionFileName ?? Workspace.FindSolutionFileName();
-
-                if (solutionFileName == null
-                    || !string.Equals(".sln", Path.GetExtension(solutionFileName), StringComparison.OrdinalIgnoreCase))
+                if (Workspace.SolutionFileName == null)
                     return;
-                using (Reporter.BeginScope($"Solution: {solutionFileName}"))
+
+                using (Reporter.BeginScope($"Solution: {Workspace.GetRelativePath(Workspace.SolutionFileName)}"))
                 {
-                    solutionFileName = Workspace.GetFullPath(solutionFileName);
                     // TODO: a .sln parser/DOM would be nice here
                     // TODO: detect encoding
                     var encoding = Encoding.UTF8;
-                    var solutionText = File.ReadAllText(solutionFileName, encoding);
-                    var solutionDirectory = Path.GetDirectoryName(solutionFileName)!;
+                    var solutionText = File.ReadAllText(Workspace.SolutionFileName, encoding);
+                    var solutionDirectory = Path.GetDirectoryName(Workspace.SolutionFileName)!;
 
                     var newSolutionText = ProjectInSolutionRegex.Replace(
                         solutionText,
@@ -230,10 +225,10 @@ namespace DotNetPlease.Commands.Internal
 
                     if (solutionText != newSolutionText)
                     {
-                        context.FilesUpdated.Add(solutionFileName);
+                        context.FilesUpdated.Add(Workspace.SolutionFileName);
                         if (!Workspace.IsStaging)
                         {
-                            File.WriteAllText(solutionFileName, newSolutionText, encoding);
+                            File.WriteAllText(Workspace.SolutionFileName, newSolutionText, encoding);
                         }
                     }
                 }

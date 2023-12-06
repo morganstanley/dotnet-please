@@ -28,6 +28,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
+using DotNetPlease.Internal;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
 namespace DotNetPlease.Helpers
@@ -215,9 +216,11 @@ namespace DotNetPlease.Helpers
             var matcher = new Matcher();
             foreach (var segment in pattern!.Split('|').Select(x => x.Trim()))
             {
-                if (File.Exists(segment))
+                var fullPath = Path.GetFullPath(segment, workingDirectory);
+
+                if (File.Exists(fullPath))
                 {
-                    files.Add(segment);
+                    files.Add(fullPath);
                 }
                 else
                 {

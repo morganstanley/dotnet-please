@@ -60,6 +60,7 @@ namespace DotNetPlease.Commands
             await RunAndAssertSuccess(
                 "pull-package-versions",
                 "Dependencies.props",
+                "--workspace",
                 "Project1/Project1.csproj",
                 StageOption(stage));
 
@@ -144,8 +145,9 @@ namespace DotNetPlease.Commands
             await RunAndAssertSuccess(
                 "pull-package-versions",
                 "Dependencies.props",
-                "Project1/Project1.csproj",
                 update ? "--update" : "",
+                "--workspace",
+                "Project1/Project1.csproj",
                 StageOption(stage));
 
             if (stage)

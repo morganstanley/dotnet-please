@@ -21,5 +21,15 @@ namespace DotNetPlease.Constants
             public const string Alias = "--stage";
             public const string Description = "Don't apply changes, just list what needs to be done";
         }
+
+        public static class Workspace
+        {
+            public const string Alias = "--workspace";
+
+            public const string Description =
+                "Specify the solutions or projects to work on. When omitted, the workspace is inferred "
+                + "from the directory hierarchy, resolving a single solution, a project file, or all projects "
+                + "under the current working directory, recursively.";
+        }
     }
 }

@@ -32,7 +32,7 @@ public class ExpandReferencesTests : TestFixtureBase
 
         if (stage) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
 
         if (stage)
         {
@@ -56,7 +56,7 @@ public class ExpandReferencesTests : TestFixtureBase
 
         if (stage) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
 
         if (stage)
         {
@@ -77,7 +77,7 @@ public class ExpandReferencesTests : TestFixtureBase
 
         if (stage) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
 
         if (stage)
         {
@@ -101,7 +101,7 @@ public class ExpandReferencesTests : TestFixtureBase
 
         if (stage) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
 
         if (stage)
         {

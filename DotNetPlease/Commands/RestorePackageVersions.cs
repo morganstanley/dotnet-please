@@ -92,11 +92,12 @@ namespace DotNetPlease.Commands
 
             private Context CreateContext(Command command)
             {
-                var projects = Workspace.LoadProjects(command.Projects);
+                var projects = Workspace.LoadProjects();
                 var packageVersionsFileName = command.PackageVersionsFileName
                                               ?? GetFilePathAbove(
                                                   "Directory.Packages.props",
                                                   Workspace.WorkingDirectory);
+
                 if (packageVersionsFileName == null)
                 {
                     throw new InvalidOperationException(

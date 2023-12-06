@@ -73,6 +73,7 @@ namespace DotNetPlease
             _rootCommand.Name = "please";
             return new CommandLineBuilder(_rootCommand)
                 .ParseResponseFileAs(ResponseFileHandling.ParseArgsAsSpaceSeparated)
+                .AddGlobalOption(_workspaceOption)
                 .AddGlobalOption(_stageOption)
                 .RegisterWithDotnetSuggest()
                 .UseHelp()
@@ -81,6 +82,9 @@ namespace DotNetPlease
         }
 
         private readonly RootCommand _rootCommand = new RootCommand();
+
+        private readonly Option<string?> _workspaceOption =
+            new Option<string?>(CommandOptions.Workspace.Alias, CommandOptions.Workspace.Description);
 
         private readonly Option<bool> _stageOption =
             new Option<bool>(CommandOptions.Stage.Alias, CommandOptions.Stage.Description);
@@ -146,6 +150,7 @@ namespace DotNetPlease
             try
             {
                 _workspace = new Workspace(
+                    context.BindingContext.ParseResult.ValueForOption(_workspaceOption),
                     Directory.GetCurrentDirectory(),
                     ServiceProvider.GetRequiredService<IReporter>(),
                     isStaging: context.BindingContext.ParseResult.ValueForOption(_stageOption)

@@ -86,7 +86,7 @@ namespace DotNetPlease.Commands
 
             if (stage) CreateSnapshot();
 
-            await RunAndAssertSuccess("change-namespace", "MorganStanley.OldNamespace", "NewNamespace", "Test.sln", StageOption(stage));
+            await RunAndAssertSuccess("change-namespace", "MorganStanley.OldNamespace", "NewNamespace", StageOption(stage));
 
             if (stage)
             {

@@ -34,8 +34,6 @@ namespace DotNetPlease.Commands
         [Command("fix-project-references", "Try to fix or remove invalid ProjectReference items")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.Projects.Description)]
-            public string? Projects { get; set; }
         }
 
         [UsedImplicitly]
@@ -45,7 +43,7 @@ namespace DotNetPlease.Commands
             {
                 Reporter.Info($"Fixing project references");
 
-                var projects = Workspace.LoadProjects(command.Projects);
+                var projects = Workspace.LoadProjects();
 
                 var context = new Context(command)
                 {

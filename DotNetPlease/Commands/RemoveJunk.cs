@@ -31,9 +31,6 @@ namespace DotNetPlease.Commands
         [Command("remove-junk", "Removes junk from the solution folder recursively")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.SolutionFileName.Description)]
-            public string? SolutionFileName { get; set; }
-
             [Option("--bin", "Remove bin and obj folders")]
             public bool RemoveBin { get; set; }
 
@@ -49,7 +46,7 @@ namespace DotNetPlease.Commands
         {
             protected override Task Handle(Command command, CancellationToken cancellationToken)
             {
-                var context = new Context(command, Workspace.FindSolutionFileName(command.SolutionFileName));
+                var context = new Context(command, Workspace.SolutionFileName);
 
                 if (command.RemoveBin)
                 {
@@ -97,7 +94,7 @@ namespace DotNetPlease.Commands
 
             private void RemoveBinFolders(Context context)
             {
-                foreach (var projectFileName in Workspace.GetProjects(context.SolutionFileName))
+                foreach (var projectFileName in Workspace.ProjectFileNames)
                 {
                     var projectDirectory = Path.GetDirectoryName(projectFileName)!;
                     TryDeleteDirectory(Path.Combine(projectDirectory!, "bin"), context);
@@ -130,7 +127,6 @@ namespace DotNetPlease.Commands
                 public Context(Command command, string? solutionFileName)
                 {
                     Command = command;
-                    SolutionFileName = solutionFileName;
                 }
             }
 

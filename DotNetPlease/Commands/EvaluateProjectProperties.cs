@@ -31,8 +31,6 @@ namespace DotNetPlease.Commands
         [Command("evaluate-props", "Evaluates and lists all properties from the selected project(s)")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
         }
 
         [UsedImplicitly]
@@ -42,7 +40,7 @@ namespace DotNetPlease.Commands
             {
                 Reporter.Info("Evaluating project properties");
 
-                var projectFileNames = Workspace.GetProjects(command.Projects);
+                var projectFileNames = Workspace.ProjectFileNames.ToList();
 
                 foreach (var fileName in projectFileNames)
                 {

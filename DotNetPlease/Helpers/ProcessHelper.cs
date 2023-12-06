@@ -12,23 +12,42 @@
  * and limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace DotNetPlease.Helpers
 {
     public static class ProcessHelper
     {
-        public static string Run(string command, string? arguments)
+        public static string Run(string command, string? arguments, IDictionary<string, string?>? environmentVariables = null)
         {
             var startInfo = new ProcessStartInfo(command, arguments)
             {
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             };
+
+            if (environmentVariables != null)
+            {
+                foreach (var envVar in environmentVariables)
+                {
+                    if (envVar.Value is null)
+                    {
+                        startInfo.Environment.Remove(envVar.Key);
+                    }
+                    else
+                    {
+                        startInfo.Environment[envVar.Key] = envVar.Value;
+                    }
+                }
+            }
 
             var process = Process.Start(startInfo)!;
             process.WaitForExit();
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
 
-            return process.StandardOutput.ReadToEnd();
+            return output;
         }
     }
 }

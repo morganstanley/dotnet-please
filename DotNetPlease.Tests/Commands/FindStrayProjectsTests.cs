@@ -45,9 +45,9 @@ namespace DotNetPlease.Commands
                 return;
             }
 
-            Reporter.Messages
+            TestOutputReporter.Messages
                 .Should().Contain(new TestOutputReporter.MessageItem("Misc/Stray/Stray.csproj", MessageType.Success));
-            Reporter.Messages
+            TestOutputReporter.Messages
                 .Should().NotContain(new TestOutputReporter.MessageItem("Project1/Project1.csproj", MessageType.Success));
         }
 

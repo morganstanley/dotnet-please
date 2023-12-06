@@ -40,10 +40,6 @@ namespace DotNetPlease.Commands
             [Argument(1, "The new namespace"), Required]
             public string NewNamespace { get; set; } = null!;
 
-            [Argument(2, CommandArguments.SolutionFileName.Description)]
-
-            public string? SolutionFileName { get; set; }
-
             [Option("--force", "Force delete existing directories")]
             public bool Force { get; set; }
         }
@@ -59,7 +55,7 @@ namespace DotNetPlease.Commands
 
                 using (Reporter.BeginScope("Searching for projects to rename"))
                 {
-                    var moves = Workspace.GetProjects(command.SolutionFileName)
+                    var moves = Workspace.ProjectFileNames
                         .Where(
                             projectFileName =>
                                 IsFileNameInNamespace(
@@ -87,7 +83,7 @@ namespace DotNetPlease.Commands
                             })
                         .ToList();
 
-                    moveCommand = new MoveProjects.Command(moves, command.SolutionFileName, command.Force);
+                    moveCommand = new MoveProjects.Command(moves, command.Force);
                 }
 
                 if (moveCommand.Moves.Count == 0)

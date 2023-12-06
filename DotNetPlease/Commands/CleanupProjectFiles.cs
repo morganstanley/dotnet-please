@@ -35,9 +35,6 @@ namespace DotNetPlease.Commands
         [Command("cleanup-project-files", "Removes code files from the project directory that are explicitly excluded with a Compile Remove item.")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
-
             [Option("--allow-globs", "Remove all code files that are excluded, even those removed with globs")]
             public bool AllowGlobs { get; set; }
 
@@ -52,7 +49,7 @@ namespace DotNetPlease.Commands
 
                 var context = new Context(command);
 
-                foreach (var project in Workspace.GetProjects(command.Projects))
+                foreach (var project in Workspace.ProjectFileNames)
                 {
                     VisitProject(project, context);
                 }

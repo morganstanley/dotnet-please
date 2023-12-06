@@ -20,7 +20,7 @@ using Xunit.Abstractions;
 
 namespace DotNetPlease.TestUtils
 {
-    public class TestOutputReporter : IReporter, IDisposable
+    public sealed class TestOutputReporter : IReporter, IDisposable
     {
         private ITestOutputHelper _testOutputHelper;
 

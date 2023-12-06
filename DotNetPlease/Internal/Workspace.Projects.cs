@@ -25,65 +25,43 @@ namespace DotNetPlease.Internal
 {
     public partial class Workspace
     {
-        public List<string> GetProjects(string? searchPattern = null)
+        public IEnumerable<ProjectInfo> ProjectInfos => _workspaceItems.Value.ProjectInfos;
+
+        public IEnumerable<string> ProjectFileNames =>
+            _workspaceItems.Value.ProjectInfos.Select(p => p.ProjectFileName);
+
+        public string? SolutionFileName => _workspaceItems.Value.SolutionFileName;
+
+        public List<Project> LoadProjects()
         {
-            if (searchPattern != null)
-            {
-                return GetProjectsFromGlob(searchPattern, WorkingDirectory, allowSolutions: true);
-            }
-
-            var solutionFileName = FindSolutionFileName();
-
-            return solutionFileName != null 
-                ? GetProjectsFromSolution(solutionFileName) 
-                : GetProjectsFromDirectory(WorkingDirectory, recursive: true);
+            return MSBuildHelper.LoadProjects(ProjectFileNames);
         }
 
-        public List<Project> LoadProjects(string? searchPattern)
+        public string? FindProject(string projectNameOrRelativePath)
         {
-            return MSBuildHelper.LoadProjects(GetProjects(searchPattern));
-        }
-
-        public string? FindProject(string projectNameOrRelativePath, string? solutionFileName = null)
-        {
-            solutionFileName ??= FindSolutionFileName();
-
-            if (solutionFileName != null)
+            if (SolutionFileName != null)
             {
-                solutionFileName = GetFullPath(solutionFileName);
-                var solution = SolutionFile.Parse(solutionFileName);
+                var solution = SolutionFile.Parse(SolutionFileName);
                 var project = FindProjectInSolution(solution, projectNameOrRelativePath);
+                
                 return project?.AbsolutePath;
             }
 
             if (!IsProjectFileName(projectNameOrRelativePath))
             {
-                return GetProjects()
+                return ProjectFileNames
                     .FirstOrDefault(
                         p => string.Equals(
                             projectNameOrRelativePath,
                             GetProjectNameFromFileName(p),
+
                             StringComparison.OrdinalIgnoreCase));
             }
 
             var projectFileName = GetFullPath(projectNameOrRelativePath);
+
             return File.Exists(projectFileName) ? projectFileName : null;
 
-        }
-
-        public string? FindSolutionFileName(string? fileName = null)
-        {
-            if (fileName != null)
-            {
-                fileName = GetFullPath(fileName);
-                return File.Exists(fileName) && IsSolutionFileName(fileName)
-                    ? fileName
-                    : null;
-            }
-            var solutionFileNames = GetSolutionsFromDirectory(WorkingDirectory);
-            return solutionFileNames.Count == 1 
-                ? solutionFileNames[0] : 
-                null;
         }
     }
 }
