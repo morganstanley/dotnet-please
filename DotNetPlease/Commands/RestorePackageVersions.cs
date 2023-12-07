@@ -40,9 +40,6 @@ namespace DotNetPlease.Commands
         {
             [Argument(0, "The file where the PackageVersion items are kept (defaults to Directory.Packages.props)")]
             public string? PackageVersionsFileName { get; set; }
-
-            [Argument(1, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
         }
 
         public class CommandHandler : CommandHandlerBase<Command>

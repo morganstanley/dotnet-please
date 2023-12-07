@@ -37,7 +37,7 @@ namespace DotNetPlease.Commands
 
             if (stage) CreateSnapshot();
 
-            await RunAndAssertSuccess("find-stray-projects");
+            await RunAndAssertSuccess("find-stray-projects", StageOption(stage));
 
             if (stage)
             {

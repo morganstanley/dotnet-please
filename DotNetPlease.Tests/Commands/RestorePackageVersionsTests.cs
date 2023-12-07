@@ -63,6 +63,7 @@ namespace DotNetPlease.Commands
             await RunAndAssertSuccess(
                 "restore-package-versions",
                 "Dependencies.props",
+                "--workspace",
                 "Project1/Project1.csproj",
                 StageOption(stage));
 

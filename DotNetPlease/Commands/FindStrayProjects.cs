@@ -32,11 +32,6 @@ namespace DotNetPlease.Commands
         [Command("find-stray-projects", "Searches for projects NOT included in a solution.")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.Projects.Description)]
-            public string? Projects { get; set; }
-
-            [Argument(1, CommandArguments.RequiredSolutionFileName.Description)]
-            public string? SolutionFileName { get; set; }
         }
 
         [UsedImplicitly]
@@ -46,13 +41,16 @@ namespace DotNetPlease.Commands
             {
                 Reporter.Info($"Searching for stray projects");
 
-                var solutionFileName = string.IsNullOrEmpty(command.SolutionFileName)
-                    ? GetSolutionFromDirectory(Workspace.WorkingDirectory)
-                    : Workspace.GetFullPath(command.SolutionFileName);
+                if (Workspace.SolutionFileName == null)
+                {
+                    Reporter.Error("This command only works on solutions.");
+
+                    return Task.CompletedTask;
+                }
 
                 var results = new List<string>();
 
-                var projectsInSolution = GetProjectsFromSolution(solutionFileName).ToHashSet(PathComparer);
+                var projectsInSolution = GetProjectsFromSolution(Workspace.SolutionFileName).ToHashSet(PathComparer);
 
                 var projectFileNames = GetProjectsFromDirectory(Workspace.WorkingDirectory, recursive: true);
 
