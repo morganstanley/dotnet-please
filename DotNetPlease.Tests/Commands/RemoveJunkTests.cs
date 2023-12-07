@@ -12,6 +12,7 @@
  * and limitations under the License.
  */
 
+using System.Collections.Generic;
 using FluentAssertions;
 using System.IO;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace DotNetPlease.Commands
     public class RemoveJunkTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_removes_bin_and_obj_directories(bool stage)
+        public async Task It_removes_bin_and_obj_directories_from_single_project(bool stage)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -44,6 +45,50 @@ namespace DotNetPlease.Commands
 
             Directory.Exists(projectDirectory + "/bin").Should().BeFalse();
             Directory.Exists(projectDirectory + "/obj").Should().BeFalse();
+        }
+
+        [Theory, CombinatorialData]
+        public async Task It_removes_bin_and_obj_directories_from_solution(bool stage)
+        {
+            var solutionFileName = GetFullPath("Test.sln");
+            CreateSolution(solutionFileName);
+
+            var projectNames = new List<string>()
+            {
+                "Project1",
+                "Project2"
+            };
+
+            var directoriesToRemove = new List<string>();
+
+            foreach (var projectName in projectNames)
+            {
+                var projectDirectory = GetFullPath(projectName);
+                var projectFileName = $"{projectDirectory}/{projectName}.csproj";
+                CreateProject(projectFileName);
+                AddProjectToSolution(projectFileName, solutionFileName);
+                directoriesToRemove.Add($"{projectDirectory}/bin");
+                Directory.CreateDirectory($"{projectDirectory}/bin");
+                File.WriteAllText($"{projectDirectory}/bin/foo.bar", "...");
+                directoriesToRemove.Add($"{projectDirectory}/obj");
+                Directory.CreateDirectory($"{projectDirectory}/obj");
+                File.WriteAllText($"{projectDirectory}/obj/baz.txt", "...");
+            }
+
+            if (stage) CreateSnapshot();
+
+            await RunAndAssertSuccess("remove-junk", "--bin", StageOption(stage));
+
+            if (stage)
+            {
+                VerifySnapshot();
+                return;
+            }
+
+            foreach (var directory in directoriesToRemove)
+            {
+                Directory.Exists(directory).Should().BeFalse();
+            }
         }
 
         [Theory, CombinatorialData]
