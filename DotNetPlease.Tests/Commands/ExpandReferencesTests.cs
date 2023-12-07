@@ -26,8 +26,8 @@ public class ExpandReferencesTests : TestFixtureBase
     [Theory, CombinatorialData]
     public async Task It_replaces_PackageReference_with_ProjectReference(bool dryRun)
     {
-        var (sourceSlnPath, sourceProjectPath) = CreateSolutionWithSingleProject("Source", "Package1");
-        var (targetSlnPath, targetProjectPath) = CreateSolutionWithSingleProject("Target", "Project1");
+        var (_, sourceProjectPath) = CreateSolutionWithSingleProject("Source", "Package1");
+        var (_, targetProjectPath) = CreateSolutionWithSingleProject("Target", "Project1");
         AddPackageReference(targetProjectPath, "Package1", "1.0.0");
 
         if (dryRun) CreateSnapshot();

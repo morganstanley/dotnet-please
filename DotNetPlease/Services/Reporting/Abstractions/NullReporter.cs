@@ -23,7 +23,7 @@ namespace DotNetPlease.Services.Reporting.Abstractions
         {
         }
 
-        public static readonly NullReporter Singleton = new NullReporter();
+        public static readonly NullReporter Singleton = new();
 
         public IDisposable BeginScope(string scope)
         {

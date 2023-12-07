@@ -132,6 +132,6 @@ namespace DotNetPlease.Commands
             (TestOutputReporter as IDisposable)?.Dispose();
         }
 
-        protected string DryRunOption(bool dryRun) => dryRun ? CommandOptions.DryRun.Alias : "";
+        protected static string DryRunOption(bool dryRun) => dryRun ? CommandOptions.DryRun.Alias : "";
     }
 }

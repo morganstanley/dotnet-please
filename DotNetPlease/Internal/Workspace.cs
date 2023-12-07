@@ -70,7 +70,7 @@ namespace DotNetPlease.Internal
                 Reporter.Info($"Detected workspace: {workspaceSpec}");
             }
 
-            if (workspaceSpec.Contains("*"))
+            if (workspaceSpec.Contains('*'))
             {
                 return new WorkspaceItems(
                     null,

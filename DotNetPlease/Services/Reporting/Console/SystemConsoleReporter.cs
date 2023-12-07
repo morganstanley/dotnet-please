@@ -94,7 +94,7 @@ namespace DotNetPlease.Services.Reporting.Console
         }
         private string? _currentScope;
         private bool _currentScopeHasOutput;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         private void WriteLine(
             TextWriter textWriter,

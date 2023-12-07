@@ -23,7 +23,7 @@ namespace DotNetPlease.Helpers
 {
     public static class FileSystemHelper
     {
-        private static readonly Regex DirectorySeparatorRegex = new Regex(@"[\\/]");
+        private static readonly Regex DirectorySeparatorRegex = new(@"[\\/]");
 
         public static bool IsSamePath(string path1, string path2)
         {

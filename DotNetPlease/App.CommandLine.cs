@@ -81,13 +81,13 @@ namespace DotNetPlease
                 .Build();
         }
 
-        private readonly RootCommand _rootCommand = new RootCommand();
+        private readonly RootCommand _rootCommand = new();
 
         private readonly Option<string?> _workspaceOption =
-            new Option<string?>(CommandOptions.Workspace.Alias, CommandOptions.Workspace.Description);
+            new(CommandOptions.Workspace.Alias, CommandOptions.Workspace.Description);
 
         private readonly Option<bool> _dryRunOption =
-            new Option<bool>(CommandOptions.DryRun.Aliases, CommandOptions.DryRun.Description);
+            new(CommandOptions.DryRun.Aliases, CommandOptions.DryRun.Description);
 
         private void BindCommands()
         {
@@ -218,9 +218,9 @@ namespace DotNetPlease
                 CommandType = commandType;
             }
 
-            public List<ArgumentBinding> Arguments { get; } = new List<ArgumentBinding>();
+            public List<ArgumentBinding> Arguments { get; } = new();
 
-            public List<OptionBinding> Options { get; } = new List<OptionBinding>();
+            public List<OptionBinding> Options { get; } = new();
         }
 
         internal class ArgumentBinding

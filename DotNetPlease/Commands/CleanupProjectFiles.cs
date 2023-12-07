@@ -125,7 +125,7 @@ namespace DotNetPlease.Commands
             private class Context
             {
                 public Command Command { get; }
-                public HashSet<string> FilesRemoved { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesRemoved { get; } = new(PathComparer);
 
                 public Context(Command command)
                 {

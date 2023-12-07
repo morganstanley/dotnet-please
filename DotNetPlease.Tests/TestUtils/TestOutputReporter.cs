@@ -48,7 +48,7 @@ namespace DotNetPlease.TestUtils
             _testOutputHelper = null!;
         }
 
-        public List<MessageItem> Messages { get; } = new List<MessageItem>();
+        public List<MessageItem> Messages { get; } = new();
 
         public readonly struct MessageItem
         {

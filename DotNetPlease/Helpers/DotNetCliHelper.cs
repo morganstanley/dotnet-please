@@ -56,7 +56,7 @@ namespace DotNetPlease.Helpers
                 _environmentOverrides);
         }
 
-        private static Dictionary<string, string?> _environmentOverrides = new()
+        private static readonly Dictionary<string, string?> _environmentOverrides = new()
         {
             { "MSBUILD_EXE_PATH", null },
             { "MSBuildLoadMicrosoftTargetsReadOnly", null },

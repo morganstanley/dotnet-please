@@ -122,7 +122,7 @@ namespace DotNetPlease.Commands
             {
                 public Command Command { get; }
                 public string? SolutionFileName { get; }
-                public HashSet<string> FilesRemoved { get; } = new HashSet<string>();
+                public HashSet<string> FilesRemoved { get; } = new();
 
                 public Context(Command command, string? solutionFileName)
                 {

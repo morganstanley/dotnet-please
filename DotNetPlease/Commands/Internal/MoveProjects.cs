@@ -166,7 +166,7 @@ namespace DotNetPlease.Commands.Internal
             }
 
             private static readonly Regex ProjectInSolutionRegex =
-                new Regex(
+                new(
                     $@"^Project\(""(?<projectTypeGuid>.*?)""\) = ""(?<projectName>.*?)"", ""(?<projectRelativePath>.*?)"", ""(?<projectGuid>{{.*?\}})""",
                     RegexOptions.Compiled | RegexOptions.Multiline);
 
@@ -281,7 +281,7 @@ namespace DotNetPlease.Commands.Internal
                 public Command Command { get; }
                 public List<Project> Projects { get; }
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
             }
 
             public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)

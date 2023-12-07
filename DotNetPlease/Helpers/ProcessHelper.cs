@@ -45,7 +45,6 @@ namespace DotNetPlease.Helpers
             var process = Process.Start(startInfo)!;
             process.WaitForExit();
             var output = process.StandardOutput.ReadToEnd();
-            var error = process.StandardError.ReadToEnd();
 
             return output;
         }

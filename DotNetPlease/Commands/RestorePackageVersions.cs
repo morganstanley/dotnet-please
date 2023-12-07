@@ -90,16 +90,14 @@ namespace DotNetPlease.Commands
             private Context CreateContext(Command command)
             {
                 var projects = Workspace.LoadProjects();
+
                 var packageVersionsFileName = command.PackageVersionsFileName
                                               ?? GetFilePathAbove(
                                                   "Directory.Packages.props",
-                                                  Workspace.WorkingDirectory);
+                                                  Workspace.WorkingDirectory)
+                                              ?? throw new InvalidOperationException(
+                                                  "Could not find the file holding the package versions");
 
-                if (packageVersionsFileName == null)
-                {
-                    throw new InvalidOperationException(
-                        "Could not find the file holding the package versions");
-                }
 
                 var packageVersions = LoadProjectFromFile(Workspace.GetFullPath(packageVersionsFileName));
 
@@ -150,10 +148,9 @@ namespace DotNetPlease.Commands
 
                 public List<Project> Projects { get; }
 
-                public Dictionary<string, object> PackageVersions { get; } =
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                public Dictionary<string, object> PackageVersions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
 
                 public Context(Command command, List<Project> projects, Project packageVersionsProject)
                 {

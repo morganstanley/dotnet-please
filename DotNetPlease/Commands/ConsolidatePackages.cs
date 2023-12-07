@@ -437,13 +437,12 @@ namespace DotNetPlease.Commands
                 public Command Command { get; }
 
                 public Dictionary<string, NuGetVersion> ConsolidatedVersions { get; } =
-                    new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
+                    new(StringComparer.OrdinalIgnoreCase);
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
                 public bool UseProperties { get; set; }
 
-                public Dictionary<string, string> PropertyNames { get; } =
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                public Dictionary<string, string> PropertyNames { get; } = new(StringComparer.OrdinalIgnoreCase);
 
                 public Regex? PackageNameRegex { get; set; }
 

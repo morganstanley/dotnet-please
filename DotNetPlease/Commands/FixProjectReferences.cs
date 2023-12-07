@@ -131,7 +131,7 @@ namespace DotNetPlease.Commands
 
                 public Command Command { get; }
                 public List<Project> Projects { get; set; } = null!;
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
             }
 
             public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)

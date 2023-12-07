@@ -89,7 +89,7 @@ namespace DotNetPlease.Commands
                 var moveCommand = new MoveProjects.Command(
                     new List<MoveProjects.ProjectMoveItem>
                     {
-                        new MoveProjects.ProjectMoveItem(projectFileName, newProjectFileName)
+                        new(projectFileName, newProjectFileName)
                     },
                     command.Force);
 

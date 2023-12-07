@@ -288,10 +288,9 @@ namespace DotNetPlease.Commands
 
                 public List<Project> Projects { get; }
 
-                public Dictionary<string, object> PackageVersions { get; } =
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                public Dictionary<string, object> PackageVersions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
 
                 public Context(Command command, List<Project> projects, Project packageVersionsProject)
                 {

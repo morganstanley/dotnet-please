@@ -36,7 +36,7 @@ namespace DotNetPlease.Helpers
     public static class MSBuildHelper
     {
         public static readonly HashSet<string> KnownProjectFileExtensions =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            new(StringComparer.OrdinalIgnoreCase)
             {
                 ".csproj",
                 ".fsproj",
@@ -45,7 +45,7 @@ namespace DotNetPlease.Helpers
             };
 
         public static readonly HashSet<string> KnownCodeFileExtensions =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            new(StringComparer.OrdinalIgnoreCase)
             {
                 ".cs",
                 ".fs",
@@ -54,7 +54,7 @@ namespace DotNetPlease.Helpers
             };
 
         public static readonly HashSet<string> ExcludedDirectoryNames =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            new(StringComparer.OrdinalIgnoreCase)
             {
                 "bin",
                 "obj",
@@ -546,8 +546,7 @@ namespace DotNetPlease.Helpers
                 .ToList();
 
             // TODO: Check global.json and use specific SDK?
-            var sdk = sdks.LastOrDefault();
-            if (sdk == null) throw new InvalidOperationException("Could not locate the .NET SDK");
+            var sdk = sdks.LastOrDefault() ?? throw new InvalidOperationException("Could not locate the .NET SDK");
             Environment.SetEnvironmentVariable("MSBuildSDKsPath", Path.Combine(sdk.Path, "Sdks"));
             Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(sdk.Path, "MSBuild.dll"));
             _msBuildLocated = true;

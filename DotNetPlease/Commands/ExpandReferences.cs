@@ -306,7 +306,7 @@ public static class ExpandReferences
 
             public string SolutionFileName { get; set; }
 
-            public List<ProjectInfo> ProjectsInSource { get; } = new List<ProjectInfo>();
+            public List<ProjectInfo> ProjectsInSource { get; } = new();
 
             public Dictionary<string, string> PackageNameToProjectFileName { get; } =
                 new(StringComparer.OrdinalIgnoreCase);
@@ -320,11 +320,11 @@ public static class ExpandReferences
             public Dictionary<string, string> ProjectFileNameToAssemblyName { get; } =
                 new(PathComparer);
 
-            public HashSet<string> PackagesToReplace { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            public HashSet<string> PackagesToReplace { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-            public HashSet<string> AssembliesToReplace { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            public HashSet<string> AssembliesToReplace { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-            public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+            public HashSet<string> FilesUpdated { get; } = new(PathComparer);
         }
 
         public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies) { }
