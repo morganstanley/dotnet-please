@@ -250,14 +250,14 @@ namespace DotNetPlease.Commands.Internal
                         {
                             if (context.Command.Force)
                             {
-                                Workspace.TryDeleteDirectory(newProjectDirectory!);
+                                Workspace.SafeDeleteDirectory(newProjectDirectory!);
                             }
 
-                            Workspace.TryMoveDirectory(projectDirectory!, newProjectDirectory!);
+                            Workspace.SafeMoveDirectory(projectDirectory!, newProjectDirectory!);
 
                             if (context.Command.Force)
                             {
-                                Workspace.TryDeleteDirectory(projectDirectory!);
+                                Workspace.SafeDeleteDirectory(projectDirectory!);
                             }
                         }
 
@@ -265,7 +265,7 @@ namespace DotNetPlease.Commands.Internal
                             newProjectDirectory!,
                             Path.GetFileName(move.OldProjectFileName)!);
 
-                        Workspace.TryMoveFile(tempProjectFileName, move.NewProjectFileName);
+                        Workspace.SafeMoveFile(tempProjectFileName, move.NewProjectFileName);
                     }
                 }
             }

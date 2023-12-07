@@ -21,13 +21,22 @@ namespace DotNetPlease.Internal
 {
     public partial class Workspace
     {
-        public void CreateDirectory(string path)
+        /// <summary>
+        /// Create the specified directory, unless it's a dry-run
+        /// </summary>
+        /// <param name="path"></param>
+        public void SafeCreateDirectory(string path)
         {
             if (IsDryRun) return;
             Directory.CreateDirectory(GetFullPath(path));
         }
 
-        public bool TryDeleteFile(string fileName)
+        /// <summary>
+        /// Delete the file, if it's not a dry-run.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns>True if the operation succeeded.</returns>
+        public bool SafeDeleteFile(string fileName)
         {
             fileName = GetFullPath(fileName);
             if (!File.Exists(fileName))
@@ -54,7 +63,12 @@ namespace DotNetPlease.Internal
             }
         }
 
-        public bool TryDeleteDirectory(string path)
+        /// <summary>
+        /// Delete the specified directory if it's not a dry-run.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns>True if the operation succeeded.</returns>
+        public bool SafeDeleteDirectory(string path)
         {
             path = GetFullPath(path);
 
@@ -82,7 +96,14 @@ namespace DotNetPlease.Internal
             }
         }
 
-        public bool TryMoveFile(string oldPath, string newPath, bool overwrite = false)
+        /// <summary>
+        /// Move file if it's not a dry-run.
+        /// </summary>
+        /// <param name="oldPath"></param>
+        /// <param name="newPath"></param>
+        /// <param name="overwrite"></param>
+        /// <returns>True if the operation succeeded.</returns>
+        public bool SafeMoveFile(string oldPath, string newPath, bool overwrite = false)
         {
             oldPath = GetFullPath(oldPath);
             newPath = GetFullPath(newPath);
@@ -121,7 +142,13 @@ namespace DotNetPlease.Internal
             }
         }
 
-        public bool TryMoveDirectory(string oldPath, string newPath)
+        /// <summary>
+        /// Move a directory if it's not a dry-run
+        /// </summary>
+        /// <param name="oldPath"></param>
+        /// <param name="newPath"></param>
+        /// <returns>True if the operation succeeded.</returns>
+        public bool SafeMoveDirectory(string oldPath, string newPath)
         {
             oldPath = GetFullPath(oldPath);
             newPath = GetFullPath(newPath);

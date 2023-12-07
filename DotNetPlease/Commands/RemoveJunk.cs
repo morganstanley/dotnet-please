@@ -104,7 +104,7 @@ namespace DotNetPlease.Commands
 
             private void TryDeleteDirectory(string path, Context context)
             {
-                if (Workspace.TryDeleteDirectory(path))
+                if (Workspace.SafeDeleteDirectory(path))
                 {
                     context.FilesRemoved.Add(path);
                 }
@@ -112,7 +112,7 @@ namespace DotNetPlease.Commands
 
             private void TryDeleteFile(string path, Context context)
             {
-                if (Workspace.TryDeleteFile(path))
+                if (Workspace.SafeDeleteFile(path))
                 {
                     context.FilesRemoved.Add(path);
                 }

@@ -88,7 +88,7 @@ namespace DotNetPlease.Commands
                     var codeFilesInProjectDirectory = GetCodeFilesInProjectDirectory(project.DirectoryPath);
                     foreach (var fileName in codeFilesInProjectDirectory)
                     {
-                        if (!glob.IsMatch(fileName) && Workspace.TryDeleteFile(fileName))
+                        if (!glob.IsMatch(fileName) && Workspace.SafeDeleteFile(fileName))
                         {
                             context.FilesRemoved.Add(fileName);
                         }
@@ -112,7 +112,7 @@ namespace DotNetPlease.Commands
                             && KnownCodeFileExtensions.Contains(Path.GetExtension(fileName))
                             && !glob.IsMatch(remove))
                         {
-                            if (Workspace.TryDeleteFile(fileName))
+                            if (Workspace.SafeDeleteFile(fileName))
                             {
                                 context.FilesRemoved.Add(fileName);
                                 item.Parent.RemoveChild(item);
