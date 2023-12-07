@@ -81,7 +81,7 @@ namespace DotNetPlease.Commands
                         FixProjectReference(project, projectReference, context);
                     }
 
-                    if (project.Xml.HasUnsavedChanges && !Workspace.IsStaging)
+                    if (project.Xml.HasUnsavedChanges && !Workspace.IsDryRun)
                     {
                         project.Save();
                     }

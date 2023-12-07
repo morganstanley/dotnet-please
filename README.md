@@ -36,7 +36,7 @@ Open a command prompt, navigate to your solution's root directory, and start
 asking things. Commands are normally kebab-cased, but the dashes can be 
 replaced with spaces to make them more readable.
 
-Most commands have a `--stage` option to just list what the command would do,
+Most commands have a `--dry-run` option to just list what the command would do,
 but we strongly advise to back up/commit your code before pleasing your projects.
 
 To get a complete list of options and arguments for each command, run

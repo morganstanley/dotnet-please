@@ -27,7 +27,7 @@ namespace DotNetPlease.Commands
     public class ChangeNamespaceTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_renames_and_moves_projects(bool stage)
+        public async Task It_renames_and_moves_projects(bool dryRun)
         {
             var projectFileNames = new List<string>()
             {
@@ -40,11 +40,11 @@ namespace DotNetPlease.Commands
                 CreateProject(projectFileName);
             }
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("change-namespace", "MorganStanley.OldNamespace", "NewNamespace", StageOption(stage));
+            await RunAndAssertSuccess("change-namespace", "MorganStanley.OldNamespace", "NewNamespace", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -66,7 +66,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_replaces_the_project_in_the_solution_file(bool stage)
+        public async Task It_replaces_the_project_in_the_solution_file(bool dryRun)
         {
             var solutionFileName = GetFullPath("Test.sln");
             CreateSolution(solutionFileName);
@@ -84,11 +84,11 @@ namespace DotNetPlease.Commands
                 AddProjectToSolution(projectFileName, solutionFileName);
             }
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("change-namespace", "MorganStanley.OldNamespace", "NewNamespace", StageOption(stage));
+            await RunAndAssertSuccess("change-namespace", "MorganStanley.OldNamespace", "NewNamespace", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

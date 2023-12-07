@@ -190,7 +190,7 @@ namespace DotNetPlease.Commands
                     if (project.Xml.HasUnsavedChanges)
                     {
                         context.FilesUpdated.Add(project.FullPath);
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }
@@ -316,7 +316,7 @@ namespace DotNetPlease.Commands
                             list.ForEach(newProperties.AppendChild);
                         }
 
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             props.Save();
                         }
@@ -416,7 +416,7 @@ namespace DotNetPlease.Commands
 
                     if (props.Xml.HasUnsavedChanges)
                     {
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             props.Save();
                         }

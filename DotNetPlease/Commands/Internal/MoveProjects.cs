@@ -157,7 +157,7 @@ namespace DotNetPlease.Commands.Internal
                     if (project.Xml.HasUnsavedChanges)
                     {
                         context.FilesUpdated.Add(project.FullPath);
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }
@@ -226,7 +226,7 @@ namespace DotNetPlease.Commands.Internal
                     if (solutionText != newSolutionText)
                     {
                         context.FilesUpdated.Add(Workspace.SolutionFileName);
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             File.WriteAllText(Workspace.SolutionFileName, newSolutionText, encoding);
                         }

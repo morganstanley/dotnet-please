@@ -25,7 +25,7 @@ namespace DotNetPlease.Commands
     public class RemoveJunkTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_removes_bin_and_obj_directories_from_single_project(bool stage)
+        public async Task It_removes_bin_and_obj_directories_from_single_project(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -33,11 +33,11 @@ namespace DotNetPlease.Commands
             Directory.CreateDirectory(projectDirectory + "/bin");
             Directory.CreateDirectory(projectDirectory + "/obj");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("remove-junk", "--bin", StageOption(stage));
+            await RunAndAssertSuccess("remove-junk", "--bin", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -48,7 +48,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_removes_bin_and_obj_directories_from_solution(bool stage)
+        public async Task It_removes_bin_and_obj_directories_from_solution(bool dryRun)
         {
             var solutionFileName = GetFullPath("Test.sln");
             CreateSolution(solutionFileName);
@@ -75,11 +75,11 @@ namespace DotNetPlease.Commands
                 File.WriteAllText($"{projectDirectory}/obj/baz.txt", "...");
             }
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("remove-junk", "--bin", StageOption(stage));
+            await RunAndAssertSuccess("remove-junk", "--bin", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -92,7 +92,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_only_removes_bin_and_obj_from_project_directories(bool stage)
+        public async Task It_only_removes_bin_and_obj_from_project_directories(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -101,11 +101,11 @@ namespace DotNetPlease.Commands
             File.WriteAllText(projectDirectory + "/assets/bin/readme.txt", "...");
             Directory.CreateDirectory(WorkingDirectory + "/bin");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("remove-junk", "--bin", StageOption(stage));
+            await RunAndAssertSuccess("remove-junk", "--bin", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

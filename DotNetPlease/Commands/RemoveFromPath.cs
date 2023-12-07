@@ -57,7 +57,7 @@ namespace DotNetPlease.Commands
                 if (paths.RemoveWhere(p => IsSamePath(p, directory)) > 0)
                 {
                     path = string.Join(Path.PathSeparator, paths);
-                    if (!Workspace.IsStaging)
+                    if (!Workspace.IsDryRun)
                     {
                         Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.User);
                         Reporter.Success($"Removed \"{directory}\" from the PATH variable.");

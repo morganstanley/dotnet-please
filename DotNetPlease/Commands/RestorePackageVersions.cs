@@ -123,7 +123,7 @@ namespace DotNetPlease.Commands
                     if (project.Xml.HasUnsavedChanges)
                     {
                         context.FilesUpdated.Add(project.FullPath);
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }

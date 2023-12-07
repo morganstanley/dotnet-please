@@ -56,7 +56,7 @@ namespace DotNetPlease.Commands
                 if (!paths.Contains(directory))
                 {
                     path = path + Path.PathSeparator + directory;
-                    if (!Workspace.IsStaging)
+                    if (!Workspace.IsDryRun)
                     {
                         Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.User);
                         Reporter.Success($"Appended \"{directory}\" to the PATH variable.");

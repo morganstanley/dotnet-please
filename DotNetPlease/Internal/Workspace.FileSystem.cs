@@ -23,7 +23,7 @@ namespace DotNetPlease.Internal
     {
         public void CreateDirectory(string path)
         {
-            if (IsStaging) return;
+            if (IsDryRun) return;
             Directory.CreateDirectory(GetFullPath(path));
         }
 
@@ -35,7 +35,7 @@ namespace DotNetPlease.Internal
 
             string relativePath = GetRelativePath(fileName);
 
-            if (IsStaging)
+            if (IsDryRun)
             {
                 Reporter.Success($"Delete {relativePath}");
                 return true;
@@ -63,7 +63,7 @@ namespace DotNetPlease.Internal
 
             string relativePath = GetRelativePath(path);
 
-            if (IsStaging)
+            if (IsDryRun)
             {
                 Reporter.Success($"Delete {relativePath}");
                 return true;
@@ -97,7 +97,7 @@ namespace DotNetPlease.Internal
                 ? (verb: "Rename", completedVerb: "Renamed")
                 : (verb: "Move", completedVerb: "Moved");
 
-            if (IsStaging)
+            if (IsDryRun)
             {
                 if (File.Exists(newPath) && !overwrite)
                 {
@@ -136,7 +136,7 @@ namespace DotNetPlease.Internal
                 ? (verb: "Rename", completedVerb: "Renamed")
                 : (verb: "Move", completedVerb: "Moved");
 
-            if (IsStaging)
+            if (IsDryRun)
             {
                 Reporter.Success($"{verb} \"{oldRelativePath}\" to \"{newNameOrRelativePath}\"");
                 return true;

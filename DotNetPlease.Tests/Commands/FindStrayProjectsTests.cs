@@ -25,7 +25,7 @@ namespace DotNetPlease.Commands
     public class FindStrayProjectsTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_finds_projects_that_are_not_part_of_the_solution(bool stage)
+        public async Task It_finds_projects_that_are_not_part_of_the_solution(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -35,11 +35,11 @@ namespace DotNetPlease.Commands
             CreateSolution(solutionFileName);
             AddProjectToSolution(projectFileName, solutionFileName);
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("find-stray-projects", StageOption(stage));
+            await RunAndAssertSuccess("find-stray-projects", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

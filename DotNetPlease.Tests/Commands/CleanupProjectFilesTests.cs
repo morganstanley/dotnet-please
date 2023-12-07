@@ -28,7 +28,7 @@ namespace DotNetPlease.Commands
     public class CleanupProjectFilesTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_removes_files_that_are_excluded_with_pattern_when_AllowGlobs_is_set(bool allowGlobs, bool stage)
+        public async Task It_removes_files_that_are_excluded_with_pattern_when_AllowGlobs_is_set(bool allowGlobs, bool dryRun)
         {
             var solutionFileName = GetFullPath("Test.sln");
             CreateSolution(solutionFileName);
@@ -45,16 +45,16 @@ namespace DotNetPlease.Commands
             {
                 args.Add("--allow-globs");
             }
-            if (stage)
+            if (dryRun)
             {
-                args.Add("--stage");
+                args.Add("--dryRun");
             }
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(args.ToArray());
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -64,7 +64,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_deletes_files_that_are_excluded_with_exact_filename_and_removes_the_Compile_item(bool stage)
+        public async Task It_deletes_files_that_are_excluded_with_exact_filename_and_removes_the_Compile_item(bool dryRun)
         {
             var solutionFileName = GetFullPath("Test.sln");
             CreateSolution(solutionFileName);
@@ -76,9 +76,9 @@ namespace DotNetPlease.Commands
             File.WriteAllText(excludedFileName, "{}");
             AddItemRemove(projectFileName, "Compile", "Excluded/Junk.cs");
 
-            await RunAndAssertSuccess("cleanup-project-files", StageOption(stage));
+            await RunAndAssertSuccess("cleanup-project-files", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 File.Exists(excludedFileName).Should().BeTrue();
             }

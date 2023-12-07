@@ -180,7 +180,7 @@ namespace DotNetPlease.Commands
                     {
                         context.FilesUpdated.Add(project.FullPath);
 
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }
@@ -264,7 +264,7 @@ namespace DotNetPlease.Commands
 
                         context.FilesUpdated.Add(context.PackageVersionsProject.FullPath);
 
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             context.PackageVersionsProject.Save();
                         }

@@ -29,7 +29,7 @@ namespace DotNetPlease.Commands
     public class ConsolidatePackagesTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_updates_packages_to_the_highest_version(bool stage)
+        public async Task It_updates_packages_to_the_highest_version(bool dryRun)
         {
             var projectFileNames = new List<string>
             {
@@ -46,11 +46,11 @@ namespace DotNetPlease.Commands
                 AddPackageReference(projectFileName, "Example.Package", version.ToString());
             }
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("consolidate-packages", StageOption(stage));
+            await RunAndAssertSuccess("consolidate-packages", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -66,7 +66,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_replaces_Version_with_property_name_when_props_file_is_provided(bool stage)
+        public async Task It_replaces_Version_with_property_name_when_props_file_is_provided(bool dryRun)
         {
             var projectFileNames = new List<string>
             {
@@ -90,11 +90,11 @@ namespace DotNetPlease.Commands
                 AddPackageReference(projectFileName, "Example.Package", version.ToString());
             }
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("consolidate-packages", "--props", "Dependencies.props", StageOption(stage));
+            await RunAndAssertSuccess("consolidate-packages", "--props", "Dependencies.props", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -115,7 +115,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_adds_new_property_if_needed(bool stage)
+        public async Task It_adds_new_property_if_needed(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -127,11 +127,11 @@ namespace DotNetPlease.Commands
 
             CreateDirectoryBuildProps("Dependencies.props");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("consolidate-packages", "--props", "Dependencies.props", StageOption(stage));
+            await RunAndAssertSuccess("consolidate-packages", "--props", "Dependencies.props", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -142,7 +142,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_keeps_Version_attributes_that_contain_an_expression(bool stage)
+        public async Task It_keeps_Version_attributes_that_contain_an_expression(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -154,11 +154,11 @@ namespace DotNetPlease.Commands
 
             CreateDirectoryBuildProps("Dependencies.props");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("consolidate-packages", "--props", "Dependencies.props", StageOption(stage));
+            await RunAndAssertSuccess("consolidate-packages", "--props", "Dependencies.props", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -170,7 +170,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_reverts_to_version_numbers_when_explicit_is_defined(bool stage)
+        public async Task It_reverts_to_version_numbers_when_explicit_is_defined(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -183,11 +183,11 @@ namespace DotNetPlease.Commands
 
             CreateDirectoryBuildProps("Dependencies.props");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("consolidate-packages", "--explicit", "--force", StageOption(stage));
+            await RunAndAssertSuccess("consolidate-packages", "--explicit", "--force", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

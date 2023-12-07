@@ -24,7 +24,7 @@ namespace DotNetPlease.Commands
     public class FixProjectReferencesTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_removes_ProjectReference_items_that_point_to_nonexistent_projects(bool stage)
+        public async Task It_removes_ProjectReference_items_that_point_to_nonexistent_projects(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -34,11 +34,11 @@ namespace DotNetPlease.Commands
             CreateSolution(solutionFileName);
             AddProjectToSolution(projectFileName, solutionFileName);
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("fix-project-references", StageOption(stage));
+            await RunAndAssertSuccess("fix-project-references", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -49,7 +49,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_fixes_the_ProjectReference_if_the_project_was_moved_to_a_different_directory(bool stage)
+        public async Task It_fixes_the_ProjectReference_if_the_project_was_moved_to_a_different_directory(bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             CreateProject(projectFileName);
@@ -62,11 +62,11 @@ namespace DotNetPlease.Commands
             AddProjectToSolution(projectFileName, solutionFileName);
             AddProjectToSolution(actualReferencedProjectFileName, solutionFileName);
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
-            await RunAndAssertSuccess("fix-project-references", StageOption(stage));
+            await RunAndAssertSuccess("fix-project-references", DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

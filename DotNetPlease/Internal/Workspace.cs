@@ -29,12 +29,12 @@ namespace DotNetPlease.Internal
             string? workspaceSpec = null,
             string? workingDirectory = null,
             IReporter? reporter = null,
-            bool isStaging = false)
+            bool isDryRun = false)
         {
             WorkspaceSpec = workspaceSpec;
             WorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
             Reporter = reporter ?? NullReporter.Singleton;
-            IsStaging = isStaging;
+            IsDryRun = isDryRun;
 
             if (!Directory.Exists(WorkingDirectory))
             {
@@ -50,7 +50,7 @@ namespace DotNetPlease.Internal
         public string RootDirectory => _workspaceItems.Value.RootDirectory;
         public string WorkingDirectory { get; }
         public IReporter Reporter { get; }
-        public bool IsStaging { get; }
+        public bool IsDryRun { get; }
 
         public string GetFullPath(string path) =>
             NormalizePath(Path.IsPathFullyQualified(path) ? path : Path.GetFullPath(path, WorkingDirectory));

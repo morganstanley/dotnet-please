@@ -109,7 +109,7 @@ public static class ExpandReferences
 
                         Reporter.Success($"Add project {projectRelativePath}");
 
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             if (solutionFolder == "")
                             {
@@ -223,7 +223,7 @@ public static class ExpandReferences
 
                 if (project.Xml.HasUnsavedChanges)
                 {
-                    if (!Workspace.IsStaging)
+                    if (!Workspace.IsDryRun)
                     {
                         project.Xml.Save();
                     }

@@ -30,7 +30,7 @@ namespace DotNetPlease.Commands
     public class MoveProjectTests : TestFixtureBase
     {
         [Theory, CombinatorialData]
-        public async Task It_moves_project_file_and_directory(bool moveOutsideOfRootDirectory, bool stage)
+        public async Task It_moves_project_file_and_directory(bool moveOutsideOfRootDirectory, bool dryRun)
         {
             var originalRelativePath = "OriginalProjectDirectory/OriginalProjectName.csproj";
             var originalFullPath = GetFullPath(originalRelativePath);
@@ -41,15 +41,15 @@ namespace DotNetPlease.Commands
                 : "NewProjectDirectory/NewProjectName.csproj";
             var newFullPath = GetFullPath(newRelativePath);
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "move-project",
                 originalRelativePath,
                 newRelativePath,
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -61,7 +61,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_replaces_the_project_in_the_solution_file(bool moveOutsideOfRootDirectory, bool stage)
+        public async Task It_replaces_the_project_in_the_solution_file(bool moveOutsideOfRootDirectory, bool dryRun)
         {
             var solutionFileName = GetFullPath("Test.sln");
             CreateSolution(solutionFileName);
@@ -74,15 +74,15 @@ namespace DotNetPlease.Commands
                 : "NewProjectDirectory/NewProjectName.csproj";
             var newFullPath = GetFullPath(newRelativePath);
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "move-project",
                 originalRelativePath,
                 newRelativePath,
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -97,7 +97,7 @@ namespace DotNetPlease.Commands
         }
 
         [Theory, CombinatorialData]
-        public async Task It_fixes_ProjectReferences(bool moveOutsideOfRootDirectory, bool stage)
+        public async Task It_fixes_ProjectReferences(bool moveOutsideOfRootDirectory, bool dryRun)
         {
             var originalRelativePath = "OriginalProject/OriginalProject.csproj";
             var originalFullPath = GetFullPath(originalRelativePath);
@@ -112,15 +112,15 @@ namespace DotNetPlease.Commands
                 : "NewProjectDirectory/NewProjectName.csproj";
             var newFullPath = GetFullPath(newRelativePath);
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "move-project",
                 originalRelativePath,
                 newRelativePath,
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

@@ -24,17 +24,17 @@ namespace DotNetPlease.Commands;
 public class ExpandReferencesTests : TestFixtureBase
 {
     [Theory, CombinatorialData]
-    public async Task It_replaces_PackageReference_with_ProjectReference(bool stage)
+    public async Task It_replaces_PackageReference_with_ProjectReference(bool dryRun)
     {
         var (sourceSlnPath, sourceProjectPath) = CreateSolutionWithSingleProject("Source", "Package1");
         var (targetSlnPath, targetProjectPath) = CreateSolutionWithSingleProject("Target", "Project1");
         AddPackageReference(targetProjectPath, "Package1", "1.0.0");
 
-        if (stage) CreateSnapshot();
+        if (dryRun) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", DryRunOption(dryRun));
 
-        if (stage)
+        if (dryRun)
         {
             VerifySnapshot();
             return;
@@ -48,17 +48,17 @@ public class ExpandReferencesTests : TestFixtureBase
     }
 
     [Theory, CombinatorialData]
-    public async Task It_adds_the_project_from_PackageReference_to_the_solution(bool stage)
+    public async Task It_adds_the_project_from_PackageReference_to_the_solution(bool dryRun)
     {
         var (sourceSlnPath, sourceProjectPath) = CreateSolutionWithSingleProject("Source", "Package1");
         var (targetSlnPath, targetProjectPath) = CreateSolutionWithSingleProject("Target", "Project1");
         AddPackageReference(targetProjectPath, "Package1", "1.0.0");
 
-        if (stage) CreateSnapshot();
+        if (dryRun) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", DryRunOption(dryRun));
 
-        if (stage)
+        if (dryRun)
         {
             VerifySnapshot();
             return;
@@ -69,17 +69,17 @@ public class ExpandReferencesTests : TestFixtureBase
     }
 
     [Theory, CombinatorialData]
-    public async Task It_replaces_Reference_with_ProjectReference(bool stage)
+    public async Task It_replaces_Reference_with_ProjectReference(bool dryRun)
     {
         var (sourceSlnPath, sourceProjectPath) = CreateSolutionWithSingleProject("Source", "ClassLib1");
         var (targetSlnPath, targetProjectPath) = CreateSolutionWithSingleProject("Target", "Project1");
         AddAssemblyReference(targetProjectPath, "ClassLib1");
 
-        if (stage) CreateSnapshot();
+        if (dryRun) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", DryRunOption(dryRun));
 
-        if (stage)
+        if (dryRun)
         {
             VerifySnapshot();
             return;
@@ -93,17 +93,17 @@ public class ExpandReferencesTests : TestFixtureBase
     }
 
     [Theory, CombinatorialData]
-    public async Task It_adds_the_project_from_Reference_to_the_solution(bool stage)
+    public async Task It_adds_the_project_from_Reference_to_the_solution(bool dryRun)
     {
         var (sourceSlnPath, sourceProjectPath) = CreateSolutionWithSingleProject("Source", "ClassLib1");
         var (targetSlnPath, targetProjectPath) = CreateSolutionWithSingleProject("Target", "Project1");
         AddAssemblyReference(targetProjectPath, "ClassLib1");
 
-        if (stage) CreateSnapshot();
+        if (dryRun) CreateSnapshot();
 
-        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", StageOption(stage));
+        await RunAndAssertSuccess("expand-references", "Source/Source.sln", "--workspace", "Target/Target.sln", DryRunOption(dryRun));
 
-        if (stage)
+        if (dryRun)
         {
             VerifySnapshot();
             return;

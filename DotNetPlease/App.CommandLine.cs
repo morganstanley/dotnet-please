@@ -74,7 +74,7 @@ namespace DotNetPlease
             return new CommandLineBuilder(_rootCommand)
                 .ParseResponseFileAs(ResponseFileHandling.ParseArgsAsSpaceSeparated)
                 .AddGlobalOption(_workspaceOption)
-                .AddGlobalOption(_stageOption)
+                .AddGlobalOption(_dryRunOption)
                 .RegisterWithDotnetSuggest()
                 .UseHelp()
                 .UseParseErrorReporting()
@@ -86,8 +86,8 @@ namespace DotNetPlease
         private readonly Option<string?> _workspaceOption =
             new Option<string?>(CommandOptions.Workspace.Alias, CommandOptions.Workspace.Description);
 
-        private readonly Option<bool> _stageOption =
-            new Option<bool>(CommandOptions.Stage.Alias, CommandOptions.Stage.Description);
+        private readonly Option<bool> _dryRunOption =
+            new Option<bool>(CommandOptions.DryRun.Aliases, CommandOptions.DryRun.Description);
 
         private void BindCommands()
         {
@@ -153,7 +153,7 @@ namespace DotNetPlease
                     context.BindingContext.ParseResult.ValueForOption(_workspaceOption),
                     Directory.GetCurrentDirectory(),
                     ServiceProvider.GetRequiredService<IReporter>(),
-                    isStaging: context.BindingContext.ParseResult.ValueForOption(_stageOption)
+                    isDryRun: context.BindingContext.ParseResult.ValueForOption(_dryRunOption)
                 );
 
                 var command = Activator.CreateInstance(commandBinding.CommandType)!;

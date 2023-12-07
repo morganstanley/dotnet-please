@@ -34,7 +34,7 @@ namespace DotNetPlease.Commands
         [Theory, CombinatorialData]
         public async Task It_moves_package_versions_to_the_central_file(
             [CombinatorialValues(VersionSpec.Same, VersionSpec.Expression)] VersionSpec versionSpec,
-            bool stage)
+            bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             var packageName = "Example.Package";
@@ -55,16 +55,16 @@ namespace DotNetPlease.Commands
                 </Project>
             ");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "pull-package-versions",
                 "Dependencies.props",
                 "--workspace",
                 "Project1/Project1.csproj",
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -108,7 +108,7 @@ namespace DotNetPlease.Commands
             VersionSpec centralVersionSpec,
             VersionSpec referencedVersionSpec,
             bool update,
-            bool stage)
+            bool dryRun)
         {
             var centralVersion = centralVersionSpec switch
             {
@@ -140,7 +140,7 @@ namespace DotNetPlease.Commands
                 </Project>
             ");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "pull-package-versions",
@@ -148,9 +148,9 @@ namespace DotNetPlease.Commands
                 update ? "--update" : "",
                 "--workspace",
                 "Project1/Project1.csproj",
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
