@@ -39,14 +39,13 @@ namespace DotNetPlease.Commands
             AddItemRemove(projectFileName, "Compile", "Excluded/**/*");
 
             var args = new List<string> { "cleanup-project-files" };
+            
             if (allowGlobs)
             {
                 args.Add("--allow-globs");
             }
-            if (dryRun)
-            {
-                args.Add("--dryRun");
-            }
+
+            args.Add(DryRunOption(dryRun));
 
             if (dryRun) CreateSnapshot();
 
