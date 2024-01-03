@@ -1,30 +1,27 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
 using MediatR;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Globbing;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using static DotNetPlease.Helpers.FileSystemHelper;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
@@ -35,9 +32,6 @@ namespace DotNetPlease.Commands
         [Command("cleanup-project-files", "Removes code files from the project directory that are explicitly excluded with a Compile Remove item.")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
-
             [Option("--allow-globs", "Remove all code files that are excluded, even those removed with globs")]
             public bool AllowGlobs { get; set; }
 
@@ -52,7 +46,7 @@ namespace DotNetPlease.Commands
 
                 var context = new Context(command);
 
-                foreach (var project in Workspace.GetProjects(command.Projects))
+                foreach (var project in Workspace.ProjectFileNames)
                 {
                     VisitProject(project, context);
                 }
@@ -75,7 +69,7 @@ namespace DotNetPlease.Commands
 
                     RemoveExcludedFiles(project, context);
 
-                    if (project.Xml.HasUnsavedChanges && !Workspace.IsStaging)
+                    if (project.Xml.HasUnsavedChanges && !Workspace.IsDryRun)
                     {
                         project.Save();
                     }
@@ -91,7 +85,7 @@ namespace DotNetPlease.Commands
                     var codeFilesInProjectDirectory = GetCodeFilesInProjectDirectory(project.DirectoryPath);
                     foreach (var fileName in codeFilesInProjectDirectory)
                     {
-                        if (!glob.IsMatch(fileName) && Workspace.TryDeleteFile(fileName))
+                        if (!glob.IsMatch(fileName) && Workspace.SafeDeleteFile(fileName))
                         {
                             context.FilesRemoved.Add(fileName);
                         }
@@ -115,7 +109,7 @@ namespace DotNetPlease.Commands
                             && KnownCodeFileExtensions.Contains(Path.GetExtension(fileName))
                             && !glob.IsMatch(remove))
                         {
-                            if (Workspace.TryDeleteFile(fileName))
+                            if (Workspace.SafeDeleteFile(fileName))
                             {
                                 context.FilesRemoved.Add(fileName);
                                 item.Parent.RemoveChild(item);
@@ -128,7 +122,7 @@ namespace DotNetPlease.Commands
             private class Context
             {
                 public Command Command { get; }
-                public HashSet<string> FilesRemoved { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesRemoved { get; } = new(PathComparer);
 
                 public Context(Command command)
                 {
