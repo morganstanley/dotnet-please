@@ -11,6 +11,8 @@
 // and limitations under the License.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,7 +24,7 @@ namespace DotNetPlease
         {
             Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine("dotnet-please from Morgan Stanley");
-            Console.WriteLine(GitVersionInformation.NuGetVersionV2);
+            Console.WriteLine(ReadVersion() ?? "<unknown version>");
             Console.WriteLine("Visit us at https://github.com/morganstanley");
             Console.WriteLine();
             try
@@ -35,6 +37,14 @@ namespace DotNetPlease
                 Console.Error.WriteLine(e);
                 return Task.FromResult(e.HResult);
             }
+        }
+
+        static string? ReadVersion()
+        {
+            return Assembly.GetEntryAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == "PackageVersion")
+                ?.Value;
         }
     }
 }

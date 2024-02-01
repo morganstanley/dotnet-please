@@ -11,7 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{515E17A9-0C5F-44
 	ProjectSection(SolutionItems) = preProject
 		CONTRIBUTING.md = CONTRIBUTING.md
 		DISCLAIMER = DISCLAIMER
-		GitVersion.yml = GitVersion.yml
 		LICENSE = LICENSE
 		NOTICE = NOTICE
 		README.md = README.md
