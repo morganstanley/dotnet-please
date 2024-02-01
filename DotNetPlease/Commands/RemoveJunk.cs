@@ -124,6 +124,7 @@ namespace DotNetPlease.Commands
                 public Context(Command command, string? solutionFileName)
                 {
                     Command = command;
+                    SolutionFileName = solutionFileName;
                 }
             }
 
