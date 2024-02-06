@@ -5,12 +5,12 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<Configurations>Debug;Release</Configurations>
-		<VersionPrefix>1.0.0</VersionPrefix>
 		<PackageId>MorganStanley.DotNetPlease</PackageId>
 		<Description>dotnet-please global tool for streamlining repetitive tasks around Visual Studio projects and solutions.</Description>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -24,10 +24,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
 		<PackageReference Include="MediatR" Version="8.0.0" />
 		<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
@@ -37,6 +33,10 @@
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
+		<PackageReference Include="MinVer" Version="4.3.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="NuGet.Versioning" Version="6.5.0" />
 		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
@@ -46,5 +46,14 @@
 	<ItemGroup>
 		<InternalsVisibleTo Include="DotNetPlease.Tests" />
 	</ItemGroup>
+
+    <Target Name="GeneratePackageVersionAttribute" AfterTargets="MinVer">
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>PackageVersion</_Parameter1>
+                <_Parameter2>$(PackageVersion)</_Parameter2>
+            </AssemblyAttribute>
+        </ItemGroup>
+    </Target>
 
 </Project>

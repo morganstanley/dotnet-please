@@ -1,26 +1,15 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
-using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
-using DotNetPlease.Internal;
-using DotNetPlease.Services.Reporting.Abstractions;
-using JetBrains.Annotations;
-using MediatR;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -28,6 +17,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetPlease.Annotations;
+using DotNetPlease.Internal;
+using DotNetPlease.Services.Reporting.Abstractions;
+using JetBrains.Annotations;
+using MediatR;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
+using NuGet.Versioning;
 using static DotNetPlease.Helpers.FileSystemHelper;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
@@ -40,9 +37,6 @@ namespace DotNetPlease.Commands
             "Updates PackageReferences to the highest version found in the solution. Does not actually run any nuget commands.")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
-
             [Option(
                 "--props",
                 "The name of an optional .props file where the consolidated versions are saved. If provided, the version numbers in project references are replaced with MSBuild properties")]
@@ -101,7 +95,7 @@ namespace DotNetPlease.Commands
                     context.UseProperties = true;
                 }
 
-                context.Projects = Workspace.LoadProjects(command.Projects);
+                context.Projects = Workspace.LoadProjects();
 
                 foreach (var project in context.Projects)
                 {
@@ -193,7 +187,7 @@ namespace DotNetPlease.Commands
                     if (project.Xml.HasUnsavedChanges)
                     {
                         context.FilesUpdated.Add(project.FullPath);
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }
@@ -319,7 +313,7 @@ namespace DotNetPlease.Commands
                             list.ForEach(newProperties.AppendChild);
                         }
 
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             props.Save();
                         }
@@ -419,7 +413,7 @@ namespace DotNetPlease.Commands
 
                     if (props.Xml.HasUnsavedChanges)
                     {
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             props.Save();
                         }
@@ -440,13 +434,12 @@ namespace DotNetPlease.Commands
                 public Command Command { get; }
 
                 public Dictionary<string, NuGetVersion> ConsolidatedVersions { get; } =
-                    new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
+                    new(StringComparer.OrdinalIgnoreCase);
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
                 public bool UseProperties { get; set; }
 
-                public Dictionary<string, string> PropertyNames { get; } =
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                public Dictionary<string, string> PropertyNames { get; } = new(StringComparer.OrdinalIgnoreCase);
 
                 public Regex? PackageNameRegex { get; set; }
 

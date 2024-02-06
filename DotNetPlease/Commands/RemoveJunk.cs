@@ -1,28 +1,25 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
 using DotNetPlease.Helpers;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
 using MediatR;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace DotNetPlease.Commands
 {
@@ -31,9 +28,6 @@ namespace DotNetPlease.Commands
         [Command("remove-junk", "Removes junk from the solution folder recursively")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.SolutionFileName.Description)]
-            public string? SolutionFileName { get; set; }
-
             [Option("--bin", "Remove bin and obj folders")]
             public bool RemoveBin { get; set; }
 
@@ -49,7 +43,7 @@ namespace DotNetPlease.Commands
         {
             protected override Task Handle(Command command, CancellationToken cancellationToken)
             {
-                var context = new Context(command, Workspace.FindSolutionFileName(command.SolutionFileName));
+                var context = new Context(command, Workspace.SolutionFileName);
 
                 if (command.RemoveBin)
                 {
@@ -97,7 +91,7 @@ namespace DotNetPlease.Commands
 
             private void RemoveBinFolders(Context context)
             {
-                foreach (var projectFileName in Workspace.GetProjects(context.SolutionFileName))
+                foreach (var projectFileName in Workspace.ProjectFileNames)
                 {
                     var projectDirectory = Path.GetDirectoryName(projectFileName)!;
                     TryDeleteDirectory(Path.Combine(projectDirectory!, "bin"), context);
@@ -107,7 +101,7 @@ namespace DotNetPlease.Commands
 
             private void TryDeleteDirectory(string path, Context context)
             {
-                if (Workspace.TryDeleteDirectory(path))
+                if (Workspace.SafeDeleteDirectory(path))
                 {
                     context.FilesRemoved.Add(path);
                 }
@@ -115,7 +109,7 @@ namespace DotNetPlease.Commands
 
             private void TryDeleteFile(string path, Context context)
             {
-                if (Workspace.TryDeleteFile(path))
+                if (Workspace.SafeDeleteFile(path))
                 {
                     context.FilesRemoved.Add(path);
                 }
@@ -125,7 +119,7 @@ namespace DotNetPlease.Commands
             {
                 public Command Command { get; }
                 public string? SolutionFileName { get; }
-                public HashSet<string> FilesRemoved { get; } = new HashSet<string>();
+                public HashSet<string> FilesRemoved { get; } = new();
 
                 public Context(Command command, string? solutionFileName)
                 {

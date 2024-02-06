@@ -1,30 +1,27 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
-using DotNetPlease.Annotations;
-using DotNetPlease.Commands.Internal;
-using DotNetPlease.Constants;
-using DotNetPlease.Internal;
-using DotNetPlease.Services.Reporting.Abstractions;
-using JetBrains.Annotations;
-using MediatR;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetPlease.Annotations;
+using DotNetPlease.Commands.Internal;
+using DotNetPlease.Internal;
+using DotNetPlease.Services.Reporting.Abstractions;
+using JetBrains.Annotations;
+using MediatR;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 namespace DotNetPlease.Commands
@@ -39,10 +36,6 @@ namespace DotNetPlease.Commands
 
             [Argument(1, "The new namespace"), Required]
             public string NewNamespace { get; set; } = null!;
-
-            [Argument(2, CommandArguments.SolutionFileName.Description)]
-
-            public string? SolutionFileName { get; set; }
 
             [Option("--force", "Force delete existing directories")]
             public bool Force { get; set; }
@@ -59,7 +52,7 @@ namespace DotNetPlease.Commands
 
                 using (Reporter.BeginScope("Searching for projects to rename"))
                 {
-                    var moves = Workspace.GetProjects(command.SolutionFileName)
+                    var moves = Workspace.ProjectFileNames
                         .Where(
                             projectFileName =>
                                 IsFileNameInNamespace(
@@ -87,7 +80,7 @@ namespace DotNetPlease.Commands
                             })
                         .ToList();
 
-                    moveCommand = new MoveProjects.Command(moves, command.SolutionFileName, command.Force);
+                    moveCommand = new MoveProjects.Command(moves, command.Force);
                 }
 
                 if (moveCommand.Moves.Count == 0)

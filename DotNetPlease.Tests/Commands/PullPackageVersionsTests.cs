@@ -1,27 +1,20 @@
-/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
-using DotNetPlease.Constants;
 using FluentAssertions;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
-using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 using static DotNetPlease.Helpers.DotNetCliHelper;
@@ -34,7 +27,7 @@ namespace DotNetPlease.Commands
         [Theory, CombinatorialData]
         public async Task It_moves_package_versions_to_the_central_file(
             [CombinatorialValues(VersionSpec.Same, VersionSpec.Expression)] VersionSpec versionSpec,
-            bool stage)
+            bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             var packageName = "Example.Package";
@@ -55,15 +48,16 @@ namespace DotNetPlease.Commands
                 </Project>
             ");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "pull-package-versions",
                 "Dependencies.props",
+                "--workspace",
                 "Project1/Project1.csproj",
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
@@ -107,7 +101,7 @@ namespace DotNetPlease.Commands
             VersionSpec centralVersionSpec,
             VersionSpec referencedVersionSpec,
             bool update,
-            bool stage)
+            bool dryRun)
         {
             var centralVersion = centralVersionSpec switch
             {
@@ -139,16 +133,17 @@ namespace DotNetPlease.Commands
                 </Project>
             ");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "pull-package-versions",
                 "Dependencies.props",
-                "Project1/Project1.csproj",
                 update ? "--update" : "",
-                StageOption(stage));
+                "--workspace",
+                "Project1/Project1.csproj",
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;
