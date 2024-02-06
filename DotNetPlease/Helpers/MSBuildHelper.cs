@@ -1,33 +1,26 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Extensions.FileSystemGlobbing;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Xml;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
 namespace DotNetPlease.Helpers
@@ -35,7 +28,7 @@ namespace DotNetPlease.Helpers
     public static class MSBuildHelper
     {
         public static readonly HashSet<string> KnownProjectFileExtensions =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            new(StringComparer.OrdinalIgnoreCase)
             {
                 ".csproj",
                 ".fsproj",
@@ -44,7 +37,7 @@ namespace DotNetPlease.Helpers
             };
 
         public static readonly HashSet<string> KnownCodeFileExtensions =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            new(StringComparer.OrdinalIgnoreCase)
             {
                 ".cs",
                 ".fs",
@@ -53,7 +46,7 @@ namespace DotNetPlease.Helpers
             };
 
         public static readonly HashSet<string> ExcludedDirectoryNames =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            new(StringComparer.OrdinalIgnoreCase)
             {
                 "bin",
                 "obj",
@@ -215,9 +208,11 @@ namespace DotNetPlease.Helpers
             var matcher = new Matcher();
             foreach (var segment in pattern!.Split('|').Select(x => x.Trim()))
             {
-                if (File.Exists(segment))
+                var fullPath = Path.GetFullPath(segment, workingDirectory);
+
+                if (File.Exists(fullPath))
                 {
-                    files.Add(segment);
+                    files.Add(fullPath);
                 }
                 else
                 {
@@ -543,8 +538,7 @@ namespace DotNetPlease.Helpers
                 .ToList();
 
             // TODO: Check global.json and use specific SDK?
-            var sdk = sdks.LastOrDefault();
-            if (sdk == null) throw new InvalidOperationException("Could not locate the .NET SDK");
+            var sdk = sdks.LastOrDefault() ?? throw new InvalidOperationException("Could not locate the .NET SDK");
             Environment.SetEnvironmentVariable("MSBuildSDKsPath", Path.Combine(sdk.Path, "Sdks"));
             Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(sdk.Path, "MSBuild.dll"));
             _msBuildLocated = true;
