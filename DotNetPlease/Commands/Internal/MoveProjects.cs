@@ -1,22 +1,15 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
-using DotNetPlease.Internal;
-using DotNetPlease.Services.Reporting.Abstractions;
-using JetBrains.Annotations;
-using MediatR;
-using Microsoft.Build.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,6 +18,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetPlease.Internal;
+using DotNetPlease.Services.Reporting.Abstractions;
+using JetBrains.Annotations;
+using MediatR;
+using Microsoft.Build.Evaluation;
 using static DotNetPlease.Helpers.FileSystemHelper;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
@@ -34,15 +32,13 @@ namespace DotNetPlease.Commands.Internal
     {
         public class Command : IRequest
         {
-            public Command(List<ProjectMoveItem> moves, string? solutionFileName, bool force)
+            public Command(List<ProjectMoveItem> moves, bool force)
             {
                 Moves = moves;
-                SolutionFileName = solutionFileName;
                 Force = force;
             }
 
             public List<ProjectMoveItem> Moves { get; }
-            public string? SolutionFileName { get; }
             public bool Force { get; }
         }
 
@@ -63,7 +59,7 @@ namespace DotNetPlease.Commands.Internal
         {
             protected override Task Handle(Command command, CancellationToken cancellationToken)
             {
-                var projects = Workspace.LoadProjects(command.SolutionFileName);
+                var projects = Workspace.LoadProjects();
                 var context = new Context(command, projects);
 
                 PreCheck(context);
@@ -159,7 +155,7 @@ namespace DotNetPlease.Commands.Internal
                     if (project.Xml.HasUnsavedChanges)
                     {
                         context.FilesUpdated.Add(project.FullPath);
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }
@@ -168,7 +164,7 @@ namespace DotNetPlease.Commands.Internal
             }
 
             private static readonly Regex ProjectInSolutionRegex =
-                new Regex(
+                new(
                     $@"^Project\(""(?<projectTypeGuid>.*?)""\) = ""(?<projectName>.*?)"", ""(?<projectRelativePath>.*?)"", ""(?<projectGuid>{{.*?\}})""",
                     RegexOptions.Compiled | RegexOptions.Multiline);
 
@@ -176,19 +172,16 @@ namespace DotNetPlease.Commands.Internal
             private void ReplaceProjectsInSolution(
                 Context context)
             {
-                var solutionFileName = context.Command.SolutionFileName ?? Workspace.FindSolutionFileName();
-
-                if (solutionFileName == null
-                    || !string.Equals(".sln", Path.GetExtension(solutionFileName), StringComparison.OrdinalIgnoreCase))
+                if (Workspace.SolutionFileName == null)
                     return;
-                using (Reporter.BeginScope($"Solution: {solutionFileName}"))
+
+                using (Reporter.BeginScope($"Solution: {Workspace.GetRelativePath(Workspace.SolutionFileName)}"))
                 {
-                    solutionFileName = Workspace.GetFullPath(solutionFileName);
                     // TODO: a .sln parser/DOM would be nice here
                     // TODO: detect encoding
                     var encoding = Encoding.UTF8;
-                    var solutionText = File.ReadAllText(solutionFileName, encoding);
-                    var solutionDirectory = Path.GetDirectoryName(solutionFileName)!;
+                    var solutionText = File.ReadAllText(Workspace.SolutionFileName, encoding);
+                    var solutionDirectory = Path.GetDirectoryName(Workspace.SolutionFileName)!;
 
                     var newSolutionText = ProjectInSolutionRegex.Replace(
                         solutionText,
@@ -230,10 +223,10 @@ namespace DotNetPlease.Commands.Internal
 
                     if (solutionText != newSolutionText)
                     {
-                        context.FilesUpdated.Add(solutionFileName);
-                        if (!Workspace.IsStaging)
+                        context.FilesUpdated.Add(Workspace.SolutionFileName);
+                        if (!Workspace.IsDryRun)
                         {
-                            File.WriteAllText(solutionFileName, newSolutionText, encoding);
+                            File.WriteAllText(Workspace.SolutionFileName, newSolutionText, encoding);
                         }
                     }
                 }
@@ -255,14 +248,14 @@ namespace DotNetPlease.Commands.Internal
                         {
                             if (context.Command.Force)
                             {
-                                Workspace.TryDeleteDirectory(newProjectDirectory!);
+                                Workspace.SafeDeleteDirectory(newProjectDirectory!);
                             }
 
-                            Workspace.TryMoveDirectory(projectDirectory!, newProjectDirectory!);
+                            Workspace.SafeMoveDirectory(projectDirectory!, newProjectDirectory!);
 
                             if (context.Command.Force)
                             {
-                                Workspace.TryDeleteDirectory(projectDirectory!);
+                                Workspace.SafeDeleteDirectory(projectDirectory!);
                             }
                         }
 
@@ -270,7 +263,7 @@ namespace DotNetPlease.Commands.Internal
                             newProjectDirectory!,
                             Path.GetFileName(move.OldProjectFileName)!);
 
-                        Workspace.TryMoveFile(tempProjectFileName, move.NewProjectFileName);
+                        Workspace.SafeMoveFile(tempProjectFileName, move.NewProjectFileName);
                     }
                 }
             }
@@ -286,7 +279,7 @@ namespace DotNetPlease.Commands.Internal
                 public Command Command { get; }
                 public List<Project> Projects { get; }
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
             }
 
             public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)

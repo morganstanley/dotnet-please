@@ -1,29 +1,25 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
 using System;
 using System.IO;
 using System.Linq;
-using JetBrains.Annotations;
-using Microsoft.Build.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 using System.Threading.Tasks;
 using FluentAssertions;
+using JetBrains.Annotations;
+using Xunit;
+using Xunit.Abstractions;
 using static DotNetPlease.Helpers.DotNetCliHelper;
 using static DotNetPlease.Helpers.MSBuildHelper;
-using Task = System.Threading.Tasks.Task;
 
 namespace DotNetPlease.Commands
 {
@@ -32,7 +28,7 @@ namespace DotNetPlease.Commands
         [Theory, CombinatorialData]
         public async Task It_restores_missing_package_versions_from_the_central_file(
             VersionSpec versionSpec,
-            bool stage)
+            bool dryRun)
         {
             var projectFileName = GetFullPath("Project1/Project1.csproj");
             var packageName = "Example.Package";
@@ -58,15 +54,16 @@ namespace DotNetPlease.Commands
                 </Project>
             ");
 
-            if (stage) CreateSnapshot();
+            if (dryRun) CreateSnapshot();
 
             await RunAndAssertSuccess(
                 "restore-package-versions",
                 "Dependencies.props",
+                "--workspace",
                 "Project1/Project1.csproj",
-                StageOption(stage));
+                DryRunOption(dryRun));
 
-            if (stage)
+            if (dryRun)
             {
                 VerifySnapshot();
                 return;

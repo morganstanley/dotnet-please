@@ -1,31 +1,28 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
+using DotNetPlease.Helpers;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
 using MediatR;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Threading;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetPlease.Helpers;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using static DotNetPlease.Helpers.FileSystemHelper;
@@ -42,9 +39,6 @@ public static class ExpandReferences
     {
         [Argument(0, "The projects or solutions to include")]
         public string ProjectsOrSolutions { get; set; } = null!;
-
-        [Argument(1, CommandArguments.SolutionFileName.Description)]
-        public string? SolutionFileName { get; set; }
     }
 
     [UsedImplicitly]
@@ -112,7 +106,7 @@ public static class ExpandReferences
 
                         Reporter.Success($"Add project {projectRelativePath}");
 
-                        if (!Workspace.IsStaging)
+                        if (!Workspace.IsDryRun)
                         {
                             if (solutionFolder == "")
                             {
@@ -226,7 +220,7 @@ public static class ExpandReferences
 
                 if (project.Xml.HasUnsavedChanges)
                 {
-                    if (!Workspace.IsStaging)
+                    if (!Workspace.IsDryRun)
                     {
                         project.Xml.Save();
                     }
@@ -294,8 +288,7 @@ public static class ExpandReferences
         {
             return new Context(command)
             {
-                SolutionFileName = Workspace.FindSolutionFileName(command.SolutionFileName)
-                                   ?? throw new ValidationException("Could not find the target solution")
+                SolutionFileName = Workspace.SolutionFileName ?? throw new ValidationException("Could not find the target solution")
             };
         }
 
@@ -310,7 +303,7 @@ public static class ExpandReferences
 
             public string SolutionFileName { get; set; }
 
-            public List<ProjectInfo> ProjectsInSource { get; } = new List<ProjectInfo>();
+            public List<ProjectInfo> ProjectsInSource { get; } = new();
 
             public Dictionary<string, string> PackageNameToProjectFileName { get; } =
                 new(StringComparer.OrdinalIgnoreCase);
@@ -324,11 +317,11 @@ public static class ExpandReferences
             public Dictionary<string, string> ProjectFileNameToAssemblyName { get; } =
                 new(PathComparer);
 
-            public HashSet<string> PackagesToReplace { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            public HashSet<string> PackagesToReplace { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-            public HashSet<string> AssembliesToReplace { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            public HashSet<string> AssembliesToReplace { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-            public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+            public HashSet<string> FilesUpdated { get; } = new(PathComparer);
         }
 
         public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies) { }
