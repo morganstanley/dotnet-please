@@ -1,26 +1,23 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
 using MediatR;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 
@@ -31,8 +28,6 @@ namespace DotNetPlease.Commands
         [Command("evaluate-props", "Evaluates and lists all properties from the selected project(s)")]
         public class Command : IRequest
         {
-            [Argument(0, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
         }
 
         [UsedImplicitly]
@@ -42,7 +37,7 @@ namespace DotNetPlease.Commands
             {
                 Reporter.Info("Evaluating project properties");
 
-                var projectFileNames = Workspace.GetProjects(command.Projects);
+                var projectFileNames = Workspace.ProjectFileNames.ToList();
 
                 foreach (var fileName in projectFileNames)
                 {
