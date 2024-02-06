@@ -1,23 +1,15 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
-using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
-using DotNetPlease.Internal;
-using DotNetPlease.Services.Reporting.Abstractions;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -31,6 +23,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetPlease.Annotations;
+using DotNetPlease.Constants;
+using DotNetPlease.Internal;
+using DotNetPlease.Services.Reporting.Abstractions;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetPlease
 {
@@ -73,17 +71,21 @@ namespace DotNetPlease
             _rootCommand.Name = "please";
             return new CommandLineBuilder(_rootCommand)
                 .ParseResponseFileAs(ResponseFileHandling.ParseArgsAsSpaceSeparated)
-                .AddGlobalOption(_stageOption)
+                .AddGlobalOption(_workspaceOption)
+                .AddGlobalOption(_dryRunOption)
                 .RegisterWithDotnetSuggest()
                 .UseHelp()
                 .UseParseErrorReporting()
                 .Build();
         }
 
-        private readonly RootCommand _rootCommand = new RootCommand();
+        private readonly RootCommand _rootCommand = new();
 
-        private readonly Option<bool> _stageOption =
-            new Option<bool>(CommandOptions.Stage.Alias, CommandOptions.Stage.Description);
+        private readonly Option<string?> _workspaceOption =
+            new(CommandOptions.Workspace.Alias, CommandOptions.Workspace.Description);
+
+        private readonly Option<bool> _dryRunOption =
+            new(CommandOptions.DryRun.Aliases, CommandOptions.DryRun.Description);
 
         private void BindCommands()
         {
@@ -146,9 +148,10 @@ namespace DotNetPlease
             try
             {
                 _workspace = new Workspace(
+                    context.BindingContext.ParseResult.ValueForOption(_workspaceOption),
                     Directory.GetCurrentDirectory(),
                     ServiceProvider.GetRequiredService<IReporter>(),
-                    isStaging: context.BindingContext.ParseResult.ValueForOption(_stageOption)
+                    isDryRun: context.BindingContext.ParseResult.ValueForOption(_dryRunOption)
                 );
 
                 var command = Activator.CreateInstance(commandBinding.CommandType)!;
@@ -213,9 +216,9 @@ namespace DotNetPlease
                 CommandType = commandType;
             }
 
-            public List<ArgumentBinding> Arguments { get; } = new List<ArgumentBinding>();
+            public List<ArgumentBinding> Arguments { get; } = new();
 
-            public List<OptionBinding> Options { get; } = new List<OptionBinding>();
+            public List<OptionBinding> Options { get; } = new();
         }
 
         internal class ArgumentBinding
