@@ -16,3 +16,13 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+
+  - package-ecosystem: nuget
+    directory: /DotNetPlease.Tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /DotNetPlease
+    schedule:
+      interval: daily
