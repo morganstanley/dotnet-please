@@ -15,11 +15,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetPlease.Annotations;
-using DotNetPlease.Helpers;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
 using MediatR;
+using static DotNetPlease.Helpers.MSBuildHelper;
 
 namespace DotNetPlease.Commands
 {
@@ -74,8 +74,10 @@ namespace DotNetPlease.Commands
                     return;
                 }
 
-                var path = Path.Combine(MSBuildHelper.GetHiddenVsDirectory(context.SolutionFileName), "v16/.suo");
-                TryDeleteFile(path, context);
+                foreach (var dir in GetHiddenVSFiles(context.SolutionFileName, ".suo"))
+                {
+                    TryDeleteFile(dir, context);
+                }
             }
 
             private void RemoveTestStore(Context context)
@@ -85,8 +87,11 @@ namespace DotNetPlease.Commands
                     Reporter.Warning("Test Store can only be removed from solutions");
                     return;
                 }
-                var path = Path.Combine(MSBuildHelper.GetHiddenVsDirectory(context.SolutionFileName), $"v16/TestStore");
-                TryDeleteDirectory(path, context);
+
+                foreach (var dir in GetHiddenVSDirectories(context.SolutionFileName, "TestStore"))
+                {
+                    TryDeleteDirectory(dir, context);
+                }
             }
 
             private void RemoveBinFolders(Context context)

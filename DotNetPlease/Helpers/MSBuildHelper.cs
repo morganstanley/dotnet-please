@@ -544,14 +544,55 @@ namespace DotNetPlease.Helpers
             _msBuildLocated = true;
         }
 
-        public static string GetHiddenVsDirectory(string solutionFileName)
+        private static readonly Regex VSVersionRegex = new Regex(@"v\d+");
+
+        /// <summary>
+        /// Returns the root directory for the specified solution under the hidden .vs directory, eg. 
+        /// <c>.vs/SolutionName</c>
+        /// </summary>
+        /// <param name="solutionFileName"></param>
+        /// <returns></returns>
+        public static string GetHiddenVSDirectoryRoot(string solutionFileName)
         {
             var hiddenDirectoryName = Path.GetExtension(solutionFileName)?.ToLower() switch
             {
                 ".slnf" => Path.GetFileName(solutionFileName),
                 _ => Path.ChangeExtension(Path.GetFileName(solutionFileName), null)
             };
-            return $".vs/{hiddenDirectoryName}";
+            return Path.Combine(Path.GetDirectoryName(solutionFileName), ".vs", hiddenDirectoryName);
+        }
+
+        /// <summary>
+        /// Returns a collection of directories matching the specified name
+        /// in any of the version-specific hidden directories for the solution, eg.
+        /// <c>.vs/SolutionName/v17/name</c>
+        /// </summary>
+        /// <param name="solutionFileName"></param>
+        /// <param name="directoryName"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetHiddenVSDirectories(string solutionFileName, string directoryName)
+        {
+            return GetHiddenVSDirectoryItems(solutionFileName, directoryName).Where(Directory.Exists);
+        }
+
+        /// <summary>
+        /// Returns a collection of file names matching the specified globbing pattern
+        /// in any of the version-specific hidden directories for the solution, eg.
+        /// <c>.vs/SolutionName/v17/pattern</c>
+        /// </summary>
+        /// <param name="solutionFileName"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetHiddenVSFiles(string solutionFileName, string fileName)
+        {
+            return GetHiddenVSDirectoryItems(solutionFileName, fileName).Where(File.Exists);
+        }
+
+        private static IEnumerable<string> GetHiddenVSDirectoryItems(string solutionFileName, string name)
+        {
+            return Directory.GetDirectories(GetHiddenVSDirectoryRoot(solutionFileName))
+                .Where(dir => VSVersionRegex.IsMatch(Path.GetFileName(dir)!))
+                .Select(dir => Path.Combine(dir, name));
         }
     }
 
