@@ -34,24 +34,6 @@ namespace DotNetPlease.Commands
     [Collection("cwd")]
     public class TestFixtureBase : IDisposable
     {
-        //[Theory, CombinatorialData]
-        //public async Task Template_test(bool dryRun)
-        //{
-        //    // Arrange workspace 
-
-        //    if (dryRun) CreateSnapshot();
-
-        //    await RunAndAssertSuccess("command", "--switch", "argument", DryRunOption(dryRun));
-
-        //    if (dryRun)
-        //    {
-        //        VerifySnapshot();
-        //        return;
-        //    }
-
-        //    // Assert
-        //}
-
         protected readonly string WorkingDirectory;
 
         protected readonly TestOutputReporter TestOutputReporter;

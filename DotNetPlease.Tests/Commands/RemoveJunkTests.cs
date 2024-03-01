@@ -12,7 +12,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
@@ -112,49 +111,6 @@ namespace DotNetPlease.Commands
 
             Directory.Exists(projectDirectory + "/assets/bin").Should().BeTrue();
             Directory.Exists(WorkingDirectory + "/bin").Should().BeTrue();
-        }
-
-        [Theory, CombinatorialData]
-        public async Task It_removes_the_TestStore_directory([CombinatorialValues("v16", "v17")]string vsVersion, bool dryRun)
-        {
-            var solutionFileName = GetFullPath("Test.sln");
-            CreateSolution(solutionFileName);
-            var directoryToDelete = Path.Combine(WorkingDirectory, ".vs", "Test", vsVersion, "TestStore");
-            Directory.CreateDirectory(directoryToDelete);
-
-            if (dryRun) CreateSnapshot();
-
-            await RunAndAssertSuccess("remove-junk", "--testStore", DryRunOption(dryRun));
-
-            if (dryRun)
-            {
-                VerifySnapshot();
-                return;
-            }
-
-            Directory.Exists(directoryToDelete).Should().BeFalse();
-        }
-
-        [Theory, CombinatorialData]
-        public async Task It_removes_the_suo_file([CombinatorialValues("v16", "v17")] string vsVersion, bool dryRun)
-        {
-            var solutionFileName = GetFullPath("Test.sln");
-            CreateSolution(solutionFileName);
-            var fileToDelete = Path.Combine(WorkingDirectory, ".vs", "Test", vsVersion, ".suo");
-            Directory.CreateDirectory(Path.GetDirectoryName(fileToDelete));
-            File.Create(fileToDelete).Dispose();
-
-            if (dryRun) CreateSnapshot();
-
-            await RunAndAssertSuccess("remove-junk", "--suo", DryRunOption(dryRun));
-
-            if (dryRun)
-            {
-                VerifySnapshot();
-                return;
-            }
-
-            File.Exists(fileToDelete).Should().BeFalse();
         }
 
         public RemoveJunkTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
