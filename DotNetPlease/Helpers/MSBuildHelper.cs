@@ -532,7 +532,7 @@ namespace DotNetPlease.Helpers
 
             var sdkList = ProcessHelper.Run("dotnet", "--list-sdks");
 
-            var sdks = Regex.Matches(sdkList, @"([\d\.]+) *\[(.*)\]")
+            var sdks = Regex.Matches(sdkList, @"^([\d\.]+) *\[(.*)\]")
                 .Select(
                     m => new
                     {
