@@ -29,15 +29,11 @@ Then to get the list of available commands:
 please --help
 ```
 
-
 ## Usage
 
 Open a command prompt, navigate to your solution's root directory, and start
 asking things. Commands are normally kebab-cased, but the dashes can be 
 replaced with spaces to make them more readable.
-
-Most commands have a `--stage` option to just list what the command would do,
-but we strongly advise to back up/commit your code before pleasing your projects.
 
 To get a complete list of options and arguments for each command, run
 ```console
@@ -48,6 +44,27 @@ or
 please <command> --help
 ```
 
+### --dry-run
+
+Most commands have a `--dry-run` option to just list what the command would do,
+but we strongly advise to back up/commit your code before pleasing your projects.
+
+### --workspace
+
+This tool mostly works on project and solution files. To specify which files to work on,
+use the `--workspace` option. This option accepts any of the following:
+
+|Value|Behavior|
+|--------|--------|
+|(empty)|Discover the projects automatically|
+|Single solution file (.sln)|Work with projects in the solution|
+|Single project file (.csproj, .fsproj, etc.)|Work with a single project|
+|Globbing pattern|Work with multiple project and solution files|
+
+When the workspace is not provided, `please` will try the following, in this order:
+- A standalone solution file in the working directory or any of its parent directories
+- A standalone project file in the working directory or any of its parent directories
+- Searhc for all project files in the working directory, recursively.
 
 ### Consolidate NuGet packages
 
@@ -145,6 +162,12 @@ It is also possible to update the existing `PackageVersion` items if some projec
 
 ```console
 please pull package versions --update
+```
+
+You can also move back the version attributes to the project files:
+
+```
+please restore package versions
 ```
 
 ### Move/rename projects
@@ -245,5 +268,5 @@ This can be useful when troubleshooting build errors. To load, evaluate and list
 in a project file with their unevaluated and evaluated values:
 
 ```console
-please evaluate props MyProject.csproj
+please evaluate props
 ```

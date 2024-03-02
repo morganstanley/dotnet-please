@@ -1,16 +1,14 @@
-/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +16,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetPlease.Annotations;
-using DotNetPlease.Constants;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
@@ -40,9 +37,6 @@ namespace DotNetPlease.Commands
         {
             [Argument(0, "The file where the PackageVersion items are kept (defaults to Directory.Packages.props)")]
             public string? PackageVersionsFileName { get; set; }
-
-            [Argument(1, CommandArguments.ProjectsOrSolution.Description)]
-            public string? Projects { get; set; }
 
             [Option(
                 "--update",
@@ -83,9 +77,17 @@ namespace DotNetPlease.Commands
 
             private Context CreateContext(Command command)
             {
-                var projects = Workspace.LoadProjects(command.Projects);
-                var packageVersionsFileName = command.PackageVersionsFileName ??
-                                              GetFilePathAbove("Directory.Packages.props", Workspace.WorkingDirectory);
+                var projects = Workspace.LoadProjects();
+
+                var packageVersionsFileName = command.PackageVersionsFileName
+                                              ?? GetFilePathAbove("Directory.Packages.props", Workspace.RootDirectory)
+                                              ?? GetFilePathAbove("Directory.Packages.props", Workspace.WorkingDirectory);
+
+                if (command.PackageVersionsFileName is null)
+                {
+                    Reporter.Info($"Packages file: {packageVersionsFileName}");
+                }
+
                 if (packageVersionsFileName == null)
                 {
                     throw new InvalidOperationException(
@@ -101,14 +103,16 @@ namespace DotNetPlease.Commands
             {
                 var packageVersions =
                     context.PackageVersionsProject.Xml.Items.Where(i => i.ItemType == "PackageVersion");
+
                 foreach (var packageVersion in packageVersions)
                 {
                     var version = packageVersion.GetMetadataValue("Version");
+
                     if (version != null)
                     {
                         context.PackageVersions[packageVersion.Include] =
-                            NuGetVersion.TryParse(version, out var nuGetVersion) 
-                                ? (object)nuGetVersion 
+                            NuGetVersion.TryParse(version, out var nuGetVersion)
+                                ? (object)nuGetVersion
                                 : version;
                     }
                 }
@@ -137,14 +141,18 @@ namespace DotNetPlease.Commands
             {
                 var packageName = packageReference.Include;
                 var versionAttribute = packageReference.GetMetadataValue("Version");
-                if (versionAttribute == null) return;
+
+                if (versionAttribute == null)
+                    return;
+
                 if (NuGetVersion.TryParse(versionAttribute, out var referencedVersion))
                 {
                     if (!context.PackageVersions.TryGetValue(packageName, out var centralVersion))
                     {
                         context.PackageVersions[packageName] = referencedVersion.ToString();
                     }
-                    else if (centralVersion is NuGetVersion centralNuGetVersion && ShouldUpdatePackageVersion(centralNuGetVersion, referencedVersion, context))
+                    else if (centralVersion is NuGetVersion centralNuGetVersion
+                             && ShouldUpdatePackageVersion(centralNuGetVersion, referencedVersion, context))
                     {
                         context.PackageVersions[packageName] = referencedVersion;
                     }
@@ -168,7 +176,8 @@ namespace DotNetPlease.Commands
                     if (project.Xml.HasUnsavedChanges)
                     {
                         context.FilesUpdated.Add(project.FullPath);
-                        if (!Workspace.IsStaging)
+
+                        if (!Workspace.IsDryRun)
                         {
                             project.Save();
                         }
@@ -182,6 +191,7 @@ namespace DotNetPlease.Commands
             {
                 var packageName = packageReference.Include;
                 var version = packageReference.GetMetadataValue("Version");
+
                 if (version != null && context.PackageVersions.ContainsKey(packageName))
                 {
                     Reporter.Success($"Update PackageReference \"{packageName}\", remove Version \"{version}\"");
@@ -192,6 +202,7 @@ namespace DotNetPlease.Commands
             private void UpdatePackageVersions(Context context)
             {
                 var packageVersionsRelativePath = Workspace.GetRelativePath(context.PackageVersionsProject.FullPath);
+
                 using (Reporter.BeginScope($"File: {packageVersionsRelativePath}"))
                 {
                     var itemGroup = context.PackageVersionsProject.Xml.ItemGroups
@@ -204,23 +215,31 @@ namespace DotNetPlease.Commands
                             i => i.ItemType == "PackageVersion"
                                  && i.Condition == ""
                                  && i.Include == version.Key);
+
                         if (packageVersion == null)
                         {
                             itemGroup ??= context.PackageVersionsProject.Xml.AddItemGroup();
                             packageVersion = itemGroup.AddItem("PackageVersion", version.Key);
-                            packageVersion.SetMetadataValue("Version", version.Value.ToString(), expressAsAttribute: true);
+
+                            packageVersion.SetMetadataValue(
+                                "Version",
+                                version.Value.ToString(),
+                                expressAsAttribute: true);
+
                             Reporter.Success($"Add PackageVersion \"{version.Key}\", \"{version.Value.ToString()}\"");
                         }
                         else
                         {
                             var existingVersion = packageVersion.GetMetadataValue("Version");
                             var newVersion = version.Value.ToString();
+
                             if (newVersion != existingVersion)
                             {
                                 packageVersion.SetMetadataValue(
                                     "Version",
                                     version.Value.ToString(),
                                     expressAsAttribute: true);
+
                                 Reporter.Success(
                                     $"Update PackageVersion \"{version.Key}\", \"{existingVersion}\" => \"{version.Value.ToString()}\"");
                             }
@@ -235,12 +254,14 @@ namespace DotNetPlease.Commands
                                 .Where(i => i.ItemType == "PackageVersion")
                                 .OrderBy(i => i.Include)
                                 .ToList();
+
                             itemGroup.RemoveChildren(sortedItems);
                             itemGroup.AddChildren(sortedItems);
                         }
-                        
+
                         context.FilesUpdated.Add(context.PackageVersionsProject.FullPath);
-                        if (!Workspace.IsStaging)
+
+                        if (!Workspace.IsDryRun)
                         {
                             context.PackageVersionsProject.Save();
                         }
@@ -264,10 +285,9 @@ namespace DotNetPlease.Commands
 
                 public List<Project> Projects { get; }
 
-                public Dictionary<string, object> PackageVersions { get; } =
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                public Dictionary<string, object> PackageVersions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-                public HashSet<string> FilesUpdated { get; } = new HashSet<string>(PathComparer);
+                public HashSet<string> FilesUpdated { get; } = new(PathComparer);
 
                 public Context(Command command, List<Project> projects, Project packageVersionsProject)
                 {
@@ -277,9 +297,7 @@ namespace DotNetPlease.Commands
                 }
             }
 
-            public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)
-            {
-            }
+            public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies) { }
         }
     }
 }

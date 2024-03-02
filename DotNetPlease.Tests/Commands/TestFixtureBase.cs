@@ -1,47 +1,67 @@
-﻿/*
- * Morgan Stanley makes this available to you under the Apache License,
- * Version 2.0 (the "License"). You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0.
- *
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Unless required by applicable law or agreed
- * to in writing, software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
+﻿// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
-using DotNetPlease.Constants;
-using DotNetPlease.Helpers;
-using DotNetPlease.Internal;
-using DotNetPlease.Services.Reporting.Abstractions;
-using DotNetPlease.TestUtils;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using DotNetPlease.Constants;
+using DotNetPlease.Helpers;
+using DotNetPlease.Services.Reporting.Abstractions;
+using DotNetPlease.TestUtils;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Xunit;
 using Xunit.Abstractions;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
 namespace DotNetPlease.Commands
-
 {
+    // Tests that change the current directory for the process must not run in parallel.
+    [Collection("cwd")]
     public class TestFixtureBase : IDisposable
     {
+        //[Theory, CombinatorialData]
+        //public async Task Template_test(bool dryRun)
+        //{
+        //    // Arrange workspace 
+
+        //    if (dryRun) CreateSnapshot();
+
+        //    await RunAndAssertSuccess("command", "--switch", "argument", DryRunOption(dryRun));
+
+        //    if (dryRun)
+        //    {
+        //        VerifySnapshot();
+        //        return;
+        //    }
+
+        //    // Assert
+        //}
+
         protected readonly string WorkingDirectory;
 
-        protected readonly TestOutputReporter Reporter;
+        protected readonly TestOutputReporter TestOutputReporter;
+        protected readonly TestOutputConsole TestOutputConsole;
 
         public TestFixtureBase(ITestOutputHelper testOutputHelper)
         {
             MSBuildHelper.LocateMSBuild();
-            Reporter = new TestOutputReporter(testOutputHelper);
+            TestOutputReporter = new TestOutputReporter(testOutputHelper);
+            TestOutputConsole = new TestOutputConsole(testOutputHelper);
             WorkingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(WorkingDirectory);
         }
@@ -95,25 +115,37 @@ namespace DotNetPlease.Commands
 
         protected async Task RunAndAssertSuccess(params string[] args)
         {
-            using var app = new App(
-                sc =>
-                {
-                    sc.Replace(new ServiceDescriptor(typeof(IReporter), Reporter));
-                    sc.Replace(
-                        new ServiceDescriptor(
-                            typeof(Workspace),
-                            new Workspace(WorkingDirectory, Reporter, args.Any(a => a == CommandOptions.Stage.Alias))));
-                    return sc;
-                });
-            var exitCode = await app.ExecuteAsync(app.PreprocessArguments(args.Where(a => !string.IsNullOrEmpty(a)).ToArray()));
-            exitCode.Should().Be(0);
+            var oldWorkingDirectory = Directory.GetCurrentDirectory();
+
+            try
+            {
+                Directory.SetCurrentDirectory(WorkingDirectory);
+
+                using var app = new App(
+                    sc =>
+                    {
+                        sc.Replace(new ServiceDescriptor(typeof(IReporter), TestOutputReporter));
+                        sc.Replace(new ServiceDescriptor(typeof(IConsole), TestOutputConsole));
+
+                        return sc;
+                    });
+
+                var exitCode = await app.ExecuteAsync(
+                    app.PreprocessArguments(args.Where(a => !string.IsNullOrEmpty(a)).ToArray()));
+
+                exitCode.Should().Be(0);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(oldWorkingDirectory);
+            }
         }
 
         public void Dispose()
         {
-            (Reporter as IDisposable)?.Dispose();
+            (TestOutputReporter as IDisposable)?.Dispose();
         }
 
-        protected string StageOption(bool isStaging) => isStaging ? CommandOptions.Stage.Alias : "";
+        protected static string DryRunOption(bool dryRun) => dryRun ? CommandOptions.DryRun.Alias : "";
     }
 }
