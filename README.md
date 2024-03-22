@@ -3,6 +3,7 @@
 
 ![Lifecycle Active](https://badgen.net/badge/Lifecycle/Active/green)
 [![Continuous](https://github.com/morganstanley/dotnet-please/actions/workflows/continuous.yml/badge.svg)](https://github.com/morganstanley/dotnet-please/actions/workflows/continuous.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/morganstanley/dotnet-please/badge)](https://securityscorecards.dev/viewer/?uri=github.com/morganstanley/dotnet-please)
 
 This CLI tool aims to streamline some repetitive tasks around Visual Studio 
 projects and solutions, including renaming multiple projects, extracting
