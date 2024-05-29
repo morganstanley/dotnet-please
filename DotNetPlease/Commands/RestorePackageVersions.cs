@@ -41,7 +41,7 @@ namespace DotNetPlease.Commands
 
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            protected override Task Handle(Command command, CancellationToken cancellationToken)
+            public override Task Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info($"Restoring package versions");
 

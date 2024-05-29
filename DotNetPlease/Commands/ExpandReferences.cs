@@ -44,7 +44,7 @@ public static class ExpandReferences
     [UsedImplicitly]
     public class CommandHandler : CommandHandlerBase<Command>
     {
-        protected override Task Handle(Command command, CancellationToken cancellationToken)
+        public override Task Handle(Command command, CancellationToken cancellationToken)
         {
             var context = CreateContext(command);
 

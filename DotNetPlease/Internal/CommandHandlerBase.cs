@@ -12,10 +12,12 @@
 
 using DotNetPlease.Services.Reporting.Abstractions;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DotNetPlease.Internal
 {
-    public abstract class CommandHandlerBase<TCommand> : AsyncRequestHandler<TCommand> where TCommand : IRequest
+    public abstract class CommandHandlerBase<TCommand> : IRequestHandler<TCommand> where TCommand : IRequest
     {
         protected IReporter Reporter { get; }
         protected IMediator Mediator { get; }
@@ -27,5 +29,7 @@ namespace DotNetPlease.Internal
             Mediator = dependencies.Mediator;
             Workspace = dependencies.Workspace;
         }
+
+        public abstract Task Handle(TCommand request, CancellationToken cancellationToken);
     }
 }
