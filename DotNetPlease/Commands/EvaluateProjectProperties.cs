@@ -33,7 +33,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            protected override Task Handle(Command command, CancellationToken cancellationToken)
+            public override Task Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info("Evaluating project properties");
 

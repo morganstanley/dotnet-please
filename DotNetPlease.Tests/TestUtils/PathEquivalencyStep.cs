@@ -17,15 +17,15 @@ namespace DotNetPlease.TestUtils
 {
     public class PathEquivalencyStep : IEquivalencyStep
     {
-        public bool CanHandle(IEquivalencyValidationContext context, IEquivalencyAssertionOptions config)
+        public EquivalencyResult Handle(Comparands comparands, IEquivalencyValidationContext context, IEquivalencyValidator nestedValidator)
         {
-            return (context.Subject is null || context.Subject is string)
-                   && (context.Expectation is null || context.Expectation is string);
-        }
-
-        public bool Handle(IEquivalencyValidationContext context, IEquivalencyValidator parent, IEquivalencyAssertionOptions config)
-        {
-            return FileSystemHelper.PathComparer.Equals((string)context.Subject, (string)context.Expectation);
+            if ((comparands.Subject is null || comparands.Subject is not string)
+                   || (comparands.Expectation is null || comparands.Expectation is not string))
+            {
+                return EquivalencyResult.ContinueWithNext;
+            }
+            
+            return FileSystemHelper.PathComparer.Equals((string)comparands.Subject, (string)comparands.Expectation) ? EquivalencyResult.AssertionCompleted : EquivalencyResult.ContinueWithNext;
         }
     }
 

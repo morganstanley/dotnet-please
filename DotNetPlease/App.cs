@@ -41,7 +41,7 @@ namespace DotNetPlease
         private void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMediatR(typeof(Program).Assembly)
+                .AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly))
                 .AddTransient<CommandHandlerDependencies>()
                 .AddSingleton<IConsole, SystemConsole>();
             services.TryAddSingleton<IReporter, SystemConsoleReporter>();

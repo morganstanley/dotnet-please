@@ -44,7 +44,7 @@ namespace DotNetPlease.Commands
             {
             }
 
-            protected override Task Handle(Command command, CancellationToken cancellationToken)
+            public override Task Handle(Command command, CancellationToken cancellationToken)
             {
                 var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? "";
                 var paths = path.Split(Path.PathSeparator).Select(p => p.Trim()).ToHashSet(PathComparer);

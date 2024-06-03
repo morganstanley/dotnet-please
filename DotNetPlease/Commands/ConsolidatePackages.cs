@@ -67,7 +67,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            protected override Task Handle(Command command, CancellationToken cancellationToken)
+            public override Task Handle(Command command, CancellationToken cancellationToken)
             {
                 if (!string.IsNullOrWhiteSpace(command.Version) && string.IsNullOrWhiteSpace(command.PackageName))
                 {
