@@ -21,11 +21,27 @@ jobs:
       with:
         fetch-depth: 0
         
+    - name: .NET info (before setup)
+      run: |
+        dotnet --info
+        printenv PATH
+        printenv MSBuildSDKsPath
+        dotnet --list-sdks
+        dotnet msbuild --version
+
     - name: Setup .NET
       uses: actions/setup-dotnet@3e891b0cb619bf60e2c25674b222b8940e2c1c25 # v4.1.0
       with:
         dotnet-version: '8.0.x'
-        
+
+    - name: .NET info (after setup)
+      run: |
+        dotnet --info
+        printenv PATH
+        printenv MSBuildSDKsPath
+        dotnet --list-sdks
+        dotnet msbuild --version
+
     - name: Restore dependencies
       run: dotnet restore --locked-mode
       
