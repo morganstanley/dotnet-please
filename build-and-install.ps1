@@ -6,17 +6,18 @@ if ($toolPath -eq $null) {
     $toolPath = ''
 }
 
-if ($toolPath -ne '') {
-    $toolScope = '--tool-path'
-}
-else {
-    $toolScope = '--global'
-}
+$ErrorActionPreference = "Stop"
 
 dotnet build --configuration Release DotNetPlease.sln
-Remove-Item -Recurse -Path ./packages
+Remove-Item -Recurse -Path ./packages -ErrorAction SilentlyContinue
 dotnet pack --no-build --configuration Release DotNetPlease.sln
 $nupkg = Get-ChildItem -Filter packages/*.nupkg | Select-Object -First 1
 $packageName = "MorganStanley.DotNetPlease"
-$version = $nupkg.Name.Substring($packageName.Length + 1, $nupkg.Name.Length - $packageName.Length - 1 - ".nupkg".Length)
-dotnet tool update $toolScope $toolPath --add-source ./packages MorganStanley.DotNetPlease --version $version
+$version = $nupkg.Name -replace "$packageName\.(.*?)\.nupkg", '$1'
+
+if ($toolPath) {
+    dotnet tool update $packageName --tool-path $toolPath ./packages --version $version
+}
+else {
+    dotnet tool update $packageName --global --add-source ./packages --version $version
+}
