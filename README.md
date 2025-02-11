@@ -30,6 +30,13 @@ Then to get the list of available commands:
 please --help
 ```
 
+### Installing on Ubuntu Linux
+
+This project uses MSBuild assemblies from Microsoft that don't seem to work when the
+.NET SDK is installed using Snap. If `please` crashes with errors mentioning the .NET SDK,
+try installing the SDK from the official Ubuntu package feed 
+([instructions](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#supported-distributions)).
+
 ## Usage
 
 Open a command prompt, navigate to your solution's root directory, and start
