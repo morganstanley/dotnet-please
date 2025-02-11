@@ -65,8 +65,8 @@ namespace DotNetPlease
         {
             using var scope = ServiceProvider.CreateScope();
             var parser = BuildCommandLineParser();
-            var cursorVisible = !Console.IsOutputRedirected && Console.CursorVisible;
-            if (!Console.IsOutputRedirected)
+            var cursorVisible = !Console.IsOutputRedirected && OperatingSystem.IsWindows() && Console.CursorVisible;
+            if (!Console.IsOutputRedirected && OperatingSystem.IsWindows())
             {
                 Console.CursorVisible = false;
             }
@@ -84,7 +84,7 @@ namespace DotNetPlease
             }
             finally
             {
-                if (!Console.IsOutputRedirected)
+                if (!Console.IsOutputRedirected && OperatingSystem.IsWindows())
                 {
                     Console.CursorVisible = cursorVisible;
                 }
