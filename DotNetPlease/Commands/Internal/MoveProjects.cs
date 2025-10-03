@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -198,8 +198,11 @@ namespace DotNetPlease.Commands.Internal
                                     match.Groups["projectRelativePath"].Value,
                                     match.Groups["projectGuid"].Value);
 
+                            var normalizedProjectRelativePath = projectRelativePath
+                                .Replace('\\', Path.DirectorySeparatorChar)
+                                .Replace('/', Path.DirectorySeparatorChar);
                             var projectFileName = Path.GetFullPath(
-                                projectRelativePath,
+                                normalizedProjectRelativePath,
                                 solutionDirectory);
 
                             var move =
@@ -212,6 +215,10 @@ namespace DotNetPlease.Commands.Internal
                             var newRelativePath = Path.GetRelativePath(
                                 solutionDirectory,
                                 move.NewProjectFileName);
+
+                            // Prefer backslashes in .sln files for consistency
+                            if (projectRelativePath.Contains('\\'))
+                                newRelativePath = newRelativePath.Replace('/', '\\');
 
                             var newProjectName = GetProjectNameFromFileName(move.NewProjectFileName);
 

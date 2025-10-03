@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -359,6 +359,9 @@ namespace DotNetPlease.Helpers
             var projectFileNames = new List<string>();
             foreach (var project in solution.ProjectsInOrder)
             {
+                if (project.ProjectType == SolutionProjectType.SolutionFolder)
+                    continue;
+
                 if (!File.Exists(project.AbsolutePath))
                     throw new InvalidOperationException(
                         $"The solution references an invalid project path: \"{project.RelativePath}\"");
