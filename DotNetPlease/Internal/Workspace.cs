@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -51,9 +51,9 @@ namespace DotNetPlease.Internal
         public bool IsDryRun { get; }
 
         public string GetFullPath(string path) =>
-            NormalizePath(Path.IsPathFullyQualified(path) ? path : Path.GetFullPath(path, WorkingDirectory));
+            NormalizePathSeparators(Path.IsPathFullyQualified(path) ? path : Path.GetFullPath(path, WorkingDirectory));
 
-        public string GetRelativePath(string path) => NormalizePath(Path.GetRelativePath(WorkingDirectory, path));
+        public string GetRelativePath(string path) => NormalizePathSeparators(Path.GetRelativePath(WorkingDirectory, path));
 
         public void Dispose() { }
 
