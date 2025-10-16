@@ -143,7 +143,7 @@ namespace DotNetPlease.Commands.Internal
                             : referencedProjectMove.NewProjectFileName;
 
                         var newReference =
-                            NormalizePath(Path.GetRelativePath(thisProjectNewDirectory, referencedProjectNewPath));
+                            GetNormalizedRelativePath(thisProjectNewDirectory, referencedProjectNewPath);
 
                         if (newReference != projectReference.UnevaluatedInclude)
                         {

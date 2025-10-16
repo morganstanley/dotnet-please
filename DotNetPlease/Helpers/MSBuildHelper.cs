@@ -394,8 +394,7 @@ namespace DotNetPlease.Helpers
 
         public static void AddProjectReference(Project project, string referencedProjectFileName)
         {
-            var reference = NormalizePath(
-                Path.GetRelativePath(project.DirectoryPath, referencedProjectFileName));
+            var reference = GetNormalizedRelativePath(project.DirectoryPath, referencedProjectFileName);
             project.AddItemFast("ProjectReference", reference);
         }
 
@@ -439,8 +438,7 @@ namespace DotNetPlease.Helpers
 
         public static ProjectItem? FindProjectReference(Project project, string referencedProjectFileName)
         {
-            var reference = NormalizePath(
-                Path.GetRelativePath(project.DirectoryPath, referencedProjectFileName));
+            var reference = GetNormalizedRelativePath(project.DirectoryPath, referencedProjectFileName);
             return project.AllEvaluatedItems.FirstOrDefault(
                 i => i.ItemType == "ProjectReference" && IsSamePath(i.UnevaluatedInclude, reference));
         }
