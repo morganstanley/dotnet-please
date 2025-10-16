@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -28,8 +28,11 @@ namespace DotNetPlease.Helpers
             return PathComparer.Equals(path1, path2);
         }
 
-        public static string NormalizePath(string? path) =>
+        public static string NormalizePathSeparators(string? path) =>
             DirectorySeparatorRegex.Replace(path ?? "", "/").TrimEnd('/');
+
+        public static string GetNormalizedRelativePath(string relativeTo, string path) =>
+            NormalizePathSeparators(Path.GetRelativePath(relativeTo, path));
 
         public static readonly StringComparer PathComparer = new PathComparerImpl();
 
@@ -92,8 +95,8 @@ namespace DotNetPlease.Helpers
                 if (string.IsNullOrWhiteSpace(x) && string.IsNullOrWhiteSpace(y))
                     return 0;
                 return string.Compare(
-                    Path.GetFullPath(NormalizePath(x)), 
-                    Path.GetFullPath(NormalizePath(y)),
+                    Path.GetFullPath(NormalizePathSeparators(x)), 
+                    Path.GetFullPath(NormalizePathSeparators(y)),
                     StringComparison.OrdinalIgnoreCase);
             }
 
@@ -105,8 +108,8 @@ namespace DotNetPlease.Helpers
                     return false;
 
                 return string.Equals(
-                    Path.GetFullPath(NormalizePath(x)),
-                    Path.GetFullPath(NormalizePath(y)),
+                    Path.GetFullPath(NormalizePathSeparators(x)),
+                    Path.GetFullPath(NormalizePathSeparators(y)),
                     StringComparison.OrdinalIgnoreCase);
             }
 
@@ -114,7 +117,7 @@ namespace DotNetPlease.Helpers
             {
                 if (string.IsNullOrWhiteSpace(obj))
                     return 0;
-                obj = Path.GetFullPath(NormalizePath(obj));
+                obj = Path.GetFullPath(NormalizePathSeparators(obj));
                 return obj.GetHashCode(StringComparison.OrdinalIgnoreCase);
             }
         }

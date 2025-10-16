@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -52,17 +52,17 @@ namespace DotNetPlease.Helpers
 
         [Theory]
         [InlineData("foo\\bar/baz", "foo/bar/baz")]
-        public void NormalizePath_replaces_backslash_with_forward_slash(string oldPath, string newPath)
+        public void NormalizePathSeparators_replaces_backslash_with_forward_slash(string oldPath, string newPath)
         {
-            NormalizePath(oldPath).Should().Be(newPath);
+            NormalizePathSeparators(oldPath).Should().Be(newPath);
         }
 
         [Theory]
         [InlineData("foo/bar/", "foo/bar")]
         [InlineData("foo\\bar\\", "foo/bar")]
-        public void NormalizePath_removes_trailing_path_separator(string oldPath, string newPath)
+        public void NormalizePathSeparators_removes_trailing_path_separator(string oldPath, string newPath)
         {
-            NormalizePath(oldPath).Should().Be(newPath);
+            NormalizePathSeparators(oldPath).Should().Be(newPath);
         }
     }
 }
