@@ -22,7 +22,7 @@ using DotNetPlease.Helpers;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using static DotNetPlease.Helpers.FileSystemHelper;
@@ -44,7 +44,7 @@ public static class ExpandReferences
     [UsedImplicitly]
     public class CommandHandler : CommandHandlerBase<Command>
     {
-        public override Task Handle(Command command, CancellationToken cancellationToken)
+        public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
         {
             var context = CreateContext(command);
 
@@ -58,7 +58,7 @@ public static class ExpandReferences
                 Reporter.Success("Nothing to update");
             }
 
-            return Task.CompletedTask;
+            return ValueTask.FromResult(Unit.Value);
         }
 
         private void DiscoverProjectsToInclude(Context context)

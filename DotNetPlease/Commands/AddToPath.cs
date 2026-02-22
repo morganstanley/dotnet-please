@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -21,7 +21,7 @@ using DotNetPlease.Helpers;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 
 namespace DotNetPlease.Commands
 {
@@ -44,7 +44,7 @@ namespace DotNetPlease.Commands
             {
             }
 
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override async ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? "";
                 var paths = path.Split(Path.PathSeparator).Select(p => p.Trim()).ToHashSet(FileSystemHelper.PathComparer);
@@ -69,7 +69,7 @@ namespace DotNetPlease.Commands
                     Reporter.Success("Nothing to update.");
                 }
 
-                return Task.CompletedTask;
+                return Unit.Value;
             }
         }
     }

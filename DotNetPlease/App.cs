@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using DotNetPlease.Services.Reporting.Console;
-using MediatR;
+using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -40,10 +40,8 @@ namespace DotNetPlease
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly))
-                .AddTransient<CommandHandlerDependencies>()
-                .AddSingleton<IConsole, SystemConsole>();
+            services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Transient);
+            services.AddTransient<CommandHandlerDependencies>();
             services.TryAddSingleton<IReporter, SystemConsoleReporter>();
             services.TryAddTransient<Workspace>(_ => _workspace!);
         }
@@ -65,14 +63,22 @@ namespace DotNetPlease
         {
             using var scope = ServiceProvider.CreateScope();
             var parser = BuildCommandLineParser();
-            var cursorVisible = !Console.IsOutputRedirected && OperatingSystem.IsWindows() && Console.CursorVisible;
-            if (!Console.IsOutputRedirected && OperatingSystem.IsWindows())
+            bool cursorVisible = false;
+            try
             {
-                Console.CursorVisible = false;
+                cursorVisible = !Console.IsOutputRedirected && OperatingSystem.IsWindows() && Console.CursorVisible;
+                if (!Console.IsOutputRedirected && OperatingSystem.IsWindows())
+                {
+                    Console.CursorVisible = false;
+                }
+            }
+            catch (NotSupportedException)
+            {
+                // Console.CursorVisible may not be supported in all environments (e.g., tests)
             }
             try
             {
-                var exitCode = await parser.InvokeAsync(args, scope.ServiceProvider.GetRequiredService<IConsole>());
+                var exitCode = await parser.InvokeAsync(args);
 
                 return exitCode;
             }

@@ -11,7 +11,7 @@
 // and limitations under the License.
 
 using DotNetPlease.Services.Reporting.Abstractions;
-using MediatR;
+using Mediator;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,6 +30,6 @@ namespace DotNetPlease.Internal
             Workspace = dependencies.Workspace;
         }
 
-        public abstract Task Handle(TCommand request, CancellationToken cancellationToken);
+        public abstract ValueTask<Unit> Handle(TCommand request, CancellationToken cancellationToken);
     }
 }

@@ -20,7 +20,7 @@ using DotNetPlease.Commands.Internal;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 namespace DotNetPlease.Commands
@@ -43,7 +43,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override async ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info($"Moving/renaming project \"{command.ProjectName}\" to \"{command.NewProjectName}\"");
 
@@ -90,7 +90,7 @@ namespace DotNetPlease.Commands
                     },
                     command.Force);
 
-                return Mediator.Send(moveCommand, cancellationToken);
+                return await Mediator.Send(moveCommand, cancellationToken);
             }
 
             public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies) { }

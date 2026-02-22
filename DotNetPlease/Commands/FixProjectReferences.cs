@@ -20,7 +20,7 @@ using DotNetPlease.Annotations;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using Microsoft.Build.Evaluation;
 using static DotNetPlease.Helpers.FileSystemHelper;
 
@@ -36,7 +36,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info($"Fixing project references");
 
@@ -57,7 +57,7 @@ namespace DotNetPlease.Commands
                     Reporter.Success("Nothing to fix");
                 }
 
-                return Task.CompletedTask;
+                return ValueTask.FromResult(Unit.Value);
             }
 
             private void FixProjectReferences(

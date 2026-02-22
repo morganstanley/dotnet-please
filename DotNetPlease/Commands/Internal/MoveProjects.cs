@@ -21,14 +21,14 @@ using System.Threading.Tasks;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using Microsoft.Build.Evaluation;
 using static DotNetPlease.Helpers.FileSystemHelper;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 namespace DotNetPlease.Commands.Internal
 {
-    internal static class MoveProjects
+    public static class MoveProjects
     {
         public class Command : IRequest
         {
@@ -57,7 +57,7 @@ namespace DotNetPlease.Commands.Internal
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 var projects = Workspace.LoadProjects();
                 var context = new Context(command, projects);
@@ -67,7 +67,7 @@ namespace DotNetPlease.Commands.Internal
                 FixProjectReferences(context);
                 MoveProjectFiles(context);
 
-                return Task.CompletedTask;
+                return ValueTask.FromResult(Unit.Value);
             }
 
             private void PreCheck(Context context)

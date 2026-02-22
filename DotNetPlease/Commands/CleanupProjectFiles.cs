@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -19,7 +19,7 @@ using DotNetPlease.Annotations;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Globbing;
 using static DotNetPlease.Helpers.FileSystemHelper;
@@ -40,7 +40,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override async ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info($"Cleaning up project files");
 
@@ -56,7 +56,7 @@ namespace DotNetPlease.Commands
                     Reporter.Success("No files to remove");
                 }
 
-                return Task.CompletedTask;
+                return Unit.Value;
             }
 
             private void VisitProject(string projectFileName, Context context)

@@ -21,7 +21,7 @@ using DotNetPlease.Commands.Internal;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 namespace DotNetPlease.Commands
@@ -44,7 +44,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override async ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info($"Changing namespace \"{command.OldNamespace}\" to \"{command.NewNamespace}\"");
 
@@ -86,10 +86,10 @@ namespace DotNetPlease.Commands
                 if (moveCommand.Moves.Count == 0)
                 {
                     Reporter.Success("Nothing to rename");
-                    return Task.CompletedTask;
+                    return Unit.Value;
                 }
 
-                return Mediator.Send(moveCommand, cancellationToken);
+                return await Mediator.Send(moveCommand, cancellationToken);
             }
 
             public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)
