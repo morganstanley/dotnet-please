@@ -11,7 +11,7 @@
 // and limitations under the License.
 
 using DotNetPlease.Services.Reporting.Abstractions;
-using MediatR;
+using Mediator;
 
 namespace DotNetPlease.Internal
 {

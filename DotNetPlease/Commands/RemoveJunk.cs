@@ -1,4 +1,4 @@
-﻿// Morgan Stanley makes this available to you under the Apache License,
+// Morgan Stanley makes this available to you under the Apache License,
 // Version 2.0 (the "License"). You may obtain a copy of the License at
 // 
 //      http://www.apache.org/licenses/LICENSE-2.0.
@@ -18,7 +18,7 @@ using DotNetPlease.Annotations;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 namespace DotNetPlease.Commands
@@ -41,7 +41,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override async ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 var context = new Context(command, Workspace.SolutionFileName);
 
@@ -63,7 +63,7 @@ namespace DotNetPlease.Commands
                     Reporter.Success("Nothing to remove");
                 }
 
-                return Task.CompletedTask;
+                return Unit.Value;
             }
 
             private void RemoveSuo(Context context)

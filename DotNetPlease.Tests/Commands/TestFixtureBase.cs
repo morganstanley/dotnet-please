@@ -95,7 +95,7 @@ namespace DotNetPlease.Commands
             static Dictionary<string, byte[]> Hash(string rootDirectory)
             {
                 var files = GetFileNamesFromGlob("**/*", rootDirectory);
-                var hasher = new SHA256Managed();
+                using var hasher = SHA256.Create();
                 hasher.Initialize();
                 var result = new Dictionary<string, byte[]>();
                 foreach (var fileName in files)

@@ -27,7 +27,7 @@ using DotNetPlease.Annotations;
 using DotNetPlease.Constants;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
-using MediatR;
+using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetPlease

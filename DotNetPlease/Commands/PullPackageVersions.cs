@@ -19,7 +19,7 @@ using DotNetPlease.Annotations;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.Versioning;
@@ -47,7 +47,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info($"Pulling package versions from project files");
 
@@ -72,7 +72,7 @@ namespace DotNetPlease.Commands
                     Reporter.Success("Nothing to update");
                 }
 
-                return Task.CompletedTask;
+                return ValueTask.FromResult(Unit.Value);
             }
 
             private Context CreateContext(Command command)

@@ -17,7 +17,7 @@ using DotNetPlease.Annotations;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
 using JetBrains.Annotations;
-using MediatR;
+using Mediator;
 using static DotNetPlease.Helpers.MSBuildHelper;
 
 
@@ -33,7 +33,7 @@ namespace DotNetPlease.Commands
         [UsedImplicitly]
         public class CommandHandler : CommandHandlerBase<Command>
         {
-            public override Task Handle(Command command, CancellationToken cancellationToken)
+            public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
                 Reporter.Info("Evaluating project properties");
 
@@ -49,7 +49,7 @@ namespace DotNetPlease.Commands
                     Reporter.Info("Found no projects to evaluate");
                 }
 
-                return Task.CompletedTask;
+                return ValueTask.FromResult(Unit.Value);
             }
 
             private void EvaluateProjectProperties(string fileName)
