@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using DotNetPlease.Annotations;
 using DotNetPlease.Internal;
 using DotNetPlease.Services.Reporting.Abstractions;
+using DotNetPlease.Services.VersionConsolidation;
 using JetBrains.Annotations;
 using Mediator;
 using Microsoft.Build.Construction;
@@ -42,6 +43,11 @@ namespace DotNetPlease.Commands
                 "--update",
                 "Update the centrally managed version to the highest one found in PackageReference items (turned off by default)")]
             public bool Update { get; set; }
+
+            [Option(
+                "--consolidation-strategy",
+                "The strategy to use when consolidating multiple versions: 'highest' (default), 'highest-within-major', or 'no-downgrade-major'")]
+            public string ConsolidationStrategy { get; set; } = "highest";
         }
 
         [UsedImplicitly]
@@ -51,7 +57,9 @@ namespace DotNetPlease.Commands
             {
                 Reporter.Info($"Pulling package versions from project files");
 
+                var strategy = CreateStrategy(command.ConsolidationStrategy);
                 var context = CreateContext(command);
+                context.Strategy = strategy;
 
                 CollectInitialPackageVersions(context);
 
@@ -73,6 +81,19 @@ namespace DotNetPlease.Commands
                 }
 
                 return ValueTask.FromResult(Unit.Value);
+            }
+
+            private IVersionConsolidationStrategy CreateStrategy(string strategyName)
+            {
+                var strategy = string.IsNullOrEmpty(strategyName) ? "highest" : strategyName.ToLowerInvariant();
+                return strategy switch
+                {
+                    "highest" => new HighestVersionStrategy(),
+                    "highest-within-major" => new HighestWithinMajorStrategy(),
+                    "no-downgrade-major" => new NoDowngradeMajorStrategy(),
+                    _ => throw new InvalidOperationException(
+                        $"Unknown consolidation strategy '{strategy}'. Valid options are: 'highest', 'highest-within-major', 'no-downgrade-major'")
+                };
             }
 
             private Context CreateContext(Command command)
@@ -274,7 +295,10 @@ namespace DotNetPlease.Commands
                 NuGetVersion referencedVersion,
                 Context context)
             {
-                return context.Command.Update && referencedVersion > centralVersion;
+                if (!context.Command.Update)
+                    return false;
+                
+                return context.Strategy.ShouldUpdate(centralVersion, referencedVersion);
             }
 
             private class Context
@@ -284,6 +308,8 @@ namespace DotNetPlease.Commands
                 public Project PackageVersionsProject { get; }
 
                 public List<Project> Projects { get; }
+
+                public IVersionConsolidationStrategy Strategy { get; set; } = new HighestVersionStrategy();
 
                 public Dictionary<string, object> PackageVersions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
