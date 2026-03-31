@@ -308,7 +308,7 @@ namespace DotNetPlease.Commands
 
                 public List<Project> Projects { get; }
 
-                public IVersionConsolidationStrategy Strategy { get; set; } = new HighestVersionStrategy();
+                public IVersionConsolidationStrategy Strategy { get; set; }
 
                 public Dictionary<string, object> PackageVersions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
