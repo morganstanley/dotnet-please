@@ -85,13 +85,14 @@ namespace DotNetPlease.Commands
 
             private IVersionConsolidationStrategy CreateStrategy(string strategyName)
             {
-                return strategyName.ToLowerInvariant() switch
+                var strategy = string.IsNullOrEmpty(strategyName) ? "highest" : strategyName.ToLowerInvariant();
+                return strategy switch
                 {
                     "highest" => new HighestVersionStrategy(),
                     "highest-within-major" => new HighestWithinMajorStrategy(),
                     "no-downgrade-major" => new NoDowngradeMajorStrategy(),
                     _ => throw new InvalidOperationException(
-                        $"Unknown consolidation strategy '{strategyName}'. Valid options are: 'highest', 'highest-within-major', 'no-downgrade-major'")
+                        $"Unknown consolidation strategy '{strategy}'. Valid options are: 'highest', 'highest-within-major', 'no-downgrade-major'")
                 };
             }
 
@@ -308,7 +309,7 @@ namespace DotNetPlease.Commands
 
                 public List<Project> Projects { get; }
 
-                public IVersionConsolidationStrategy Strategy { get; set; }
+                public IVersionConsolidationStrategy Strategy { get; set; } = new HighestVersionStrategy();
 
                 public Dictionary<string, object> PackageVersions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
