@@ -84,15 +84,13 @@ public static class CreateSolutionFilters
         {
             Reporter.Info("Discovering source solutions");
 
-            var projectInfos = GetProjectInfosFromGlob(
+            var solutionFiles = FileSystemHelper.GetFileNamesFromGlob(
                 context.Command.From,
-                Workspace.WorkingDirectory,
-                allowSolutions: true);
+                Workspace.WorkingDirectory);
 
             context.SourceSolutions.AddRange(
-                projectInfos
-                    .Where(p => p.SolutionFileName != null && IsSolutionFileName(p.SolutionFileName))
-                    .Select(p => p.SolutionFileName!)
+                solutionFiles
+                    .Where(IsSolutionFileName)
                     .Distinct()
                     .OrderBy(p => p));
 
