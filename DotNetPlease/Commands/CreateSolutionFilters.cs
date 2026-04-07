@@ -115,6 +115,7 @@ public static class CreateSolutionFilters
                 catch (Exception ex)
                 {
                     Reporter.Error($"Failed to parse {sourceSolution}: {ex.Message}");
+                    throw new InvalidOperationException($"Failed to parse source solution '{sourceSolution}'. Aborting conversion.", ex);
                 }
             }
         }
