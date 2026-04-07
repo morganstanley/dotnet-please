@@ -207,31 +207,26 @@ public class CreateSolutionFiltersTests : TestFixtureBase
         File.Exists(filterPath).Should().BeTrue($"Filter file {filterPath} should exist");
 
         var json = File.ReadAllText(filterPath);
-        var filter = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+        using var filter = JsonDocument.Parse(json);
 
-        filter.Should().NotBeNull();
-        filter.Should().ContainKey("version");
-        ((JsonElement)filter!["defaultFilter"]).GetString().Should().Be(expectedFilterName);
-        filter.Should().ContainKey("filters");
+        var root = filter.RootElement;
+        root.TryGetProperty("solution", out var solutionElement).Should().BeTrue();
 
-        var filtersObj = (JsonElement)filter["filters"];
-        filtersObj.TryGetProperty(expectedFilterName, out var filterDef).Should().BeTrue();
+        var filterDir = Path.GetDirectoryName(filterPath)!;
+        var expectedRelativePath = Path.GetRelativePath(filterDir, targetSolutionPath);
 
-        var targetDir = Path.GetDirectoryName(targetSolutionPath)!;
-        var expectedRelativePath = Path.GetRelativePath(targetDir, targetSolutionPath);
-        
-        filterDef.TryGetProperty("path", out var pathElement).Should().BeTrue();
+        solutionElement.TryGetProperty("path", out var pathElement).Should().BeTrue();
         pathElement.GetString().Should().Be(expectedRelativePath);
 
-        filterDef.TryGetProperty("includes", out var includesElement).Should().BeTrue();
-        var includes = includesElement.EnumerateArray().Select(e => e.GetString()).ToList();
-        
-        var expectedIncludes = expectedProjectPaths
-            .Select(p => Path.GetRelativePath(targetDir, p))
+        solutionElement.TryGetProperty("projects", out var projectsElement).Should().BeTrue();
+        var projects = projectsElement.EnumerateArray().Select(e => e.GetString()).ToList();
+
+        var expectedProjects = expectedProjectPaths
+            .Select(p => Path.GetRelativePath(filterDir, p))
             .OrderBy(p => p)
             .ToList();
 
-        includes.Should().BeEquivalentTo(expectedIncludes);
+        projects.Should().BeEquivalentTo(expectedProjects);
     }
 
     public CreateSolutionFiltersTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
