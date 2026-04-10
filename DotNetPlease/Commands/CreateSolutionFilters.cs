@@ -54,12 +54,20 @@ public static class CreateSolutionFilters
 
         public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
         {
+            // Validate target is a .sln file
+            if (!command.Target.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+            {
+                Reporter.Error("Target must be a .sln file (e.g., Consolidated.sln)");
+                return ValueTask.FromResult(Unit.Value);
+            }
+
             var context = new Context
             {
                 Command = command,
                 SourceSolutions = new List<string>(),
                 TargetSolutionPath = Path.Combine(Workspace.WorkingDirectory, command.Target),
-                ProjectsBySource = new Dictionary<string, List<string>>()
+                ProjectsBySource = new Dictionary<string, List<string>>(),
+                AddedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             };
 
             DiscoverSourceSolutions(context);
@@ -72,6 +80,10 @@ public static class CreateSolutionFilters
 
             ExtractProjectsFromSources(context);
             CreateOrValidateTargetSolution(context);
+            
+            // Remove target solution from cleanup list to prevent accidental deletion
+            context.SourceSolutions.Remove(context.TargetSolutionPath);
+            
             ConsolidateProjectsToTarget(context);
             GenerateSolutionFilters(context);
             CleanupSourceSolutions(context);
@@ -150,6 +162,13 @@ public static class CreateSolutionFilters
 
                     foreach (var project in projects)
                     {
+                        // Skip duplicate projects
+                        if (context.AddedProjects.Contains(project))
+                        {
+                            Reporter.Info($"  {Workspace.GetRelativePath(project)} (already added)");
+                            continue;
+                        }
+
                         var projectRelativePath = Workspace.GetRelativePath(project);
                         
                         if (!Workspace.IsDryRun)
@@ -160,6 +179,7 @@ public static class CreateSolutionFilters
                                 solutionFolderName);
                         }
 
+                        context.AddedProjects.Add(project);
                         Reporter.Success($"  {projectRelativePath} -> {solutionFolderName}");
                     }
                 }
@@ -170,34 +190,25 @@ public static class CreateSolutionFilters
         {
             Reporter.Info("Generating solution filter files");
 
-            var targetSolutionRelativePath = Workspace.GetRelativePath(context.TargetSolutionPath);
-            var targetSolutionDirectory = Path.GetDirectoryName(context.TargetSolutionPath)!;
-
             foreach (var sourceSolution in context.SourceSolutions)
             {
                 var filterFileName = Path.ChangeExtension(sourceSolution, ".slnf");
-                var filterName = Path.GetFileNameWithoutExtension(sourceSolution);
                 var projects = context.ProjectsBySource[sourceSolution];
+                var filterDir = Path.GetDirectoryName(filterFileName)!;
 
+                // Compute paths relative to the .slnf file location
+                var relativeSolutionPath = Path.GetRelativePath(filterDir, context.TargetSolutionPath);
                 var projectIncludePaths = projects
-                    .Select(p => Path.GetRelativePath(targetSolutionDirectory, p))
+                    .Select(p => Path.GetRelativePath(filterDir, p))
                     .OrderBy(p => p)
                     .ToList();
 
                 var filter = new SolutionFilterJson
                 {
-                    Version = "0.1",
-                    DefaultFilter = filterName,
-                    Filters = new Dictionary<string, FilterDefinition>
+                    Solution = new SolutionElement
                     {
-                        {
-                            filterName,
-                            new FilterDefinition
-                            {
-                                Path = Path.GetRelativePath(targetSolutionDirectory, context.TargetSolutionPath),
-                                Includes = projectIncludePaths
-                            }
-                        }
+                        Path = relativeSolutionPath,
+                        Projects = projectIncludePaths
                     }
                 };
 
@@ -236,19 +247,18 @@ public static class CreateSolutionFilters
             public List<string> SourceSolutions { get; set; } = null!;
             public string TargetSolutionPath { get; set; } = null!;
             public Dictionary<string, List<string>> ProjectsBySource { get; set; } = null!;
+            public HashSet<string> AddedProjects { get; set; } = null!;
         }
 
         private class SolutionFilterJson
         {
-            public string? Version { get; set; }
-            public string? DefaultFilter { get; set; }
-            public Dictionary<string, FilterDefinition>? Filters { get; set; }
+            public SolutionElement? Solution { get; set; }
         }
 
-        private class FilterDefinition
+        private class SolutionElement
         {
             public string? Path { get; set; }
-            public List<string>? Includes { get; set; }
+            public List<string>? Projects { get; set; }
         }
     }
 }
