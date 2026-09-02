@@ -1,0 +1,264 @@
+// Morgan Stanley makes this available to you under the Apache License,
+// Version 2.0 (the "License"). You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0.
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership. Unless required by applicable law or agreed
+// to in writing, software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using DotNetPlease.Annotations;
+using DotNetPlease.Helpers;
+using DotNetPlease.Internal;
+using DotNetPlease.Services.Reporting.Abstractions;
+using JetBrains.Annotations;
+using Mediator;
+using Microsoft.Build.Construction;
+using static DotNetPlease.Helpers.MSBuildHelper;
+
+namespace DotNetPlease.Commands;
+
+public static class CreateSolutionFilters
+{
+    [Command(
+        "create-solution-filters",
+        "Converts multiple solutions to a single solution with solution filter files")]
+    public class Command : IRequest
+    {
+        [Option("--from", "Globbing pattern for source .sln files")]
+        [Required]
+        public string From { get; set; } = null!;
+
+        [Option("--target", "Target solution file name")]
+        [Required]
+        public string Target { get; set; } = null!;
+    }
+
+    [UsedImplicitly]
+    public class CommandHandler : CommandHandlerBase<Command>
+    {
+        public CommandHandler(CommandHandlerDependencies dependencies) : base(dependencies)
+        {
+        }
+
+        public override ValueTask<Unit> Handle(Command command, CancellationToken cancellationToken)
+        {
+            // Validate target is a .sln file
+            if (!command.Target.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+            {
+                Reporter.Error("Target must be a .sln file (e.g., Consolidated.sln)");
+                return ValueTask.FromResult(Unit.Value);
+            }
+
+            var context = new Context
+            {
+                Command = command,
+                SourceSolutions = new List<string>(),
+                TargetSolutionPath = Path.Combine(Workspace.WorkingDirectory, command.Target),
+                ProjectsBySource = new Dictionary<string, List<string>>(),
+                AddedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            };
+
+            DiscoverSourceSolutions(context);
+            
+            if (context.SourceSolutions.Count == 0)
+            {
+                Reporter.Error($"No solutions found matching pattern: {command.From}");
+                return ValueTask.FromResult(Unit.Value);
+            }
+
+            ExtractProjectsFromSources(context);
+            CreateOrValidateTargetSolution(context);
+            
+            // Remove target solution from cleanup list to prevent accidental deletion
+            context.SourceSolutions.Remove(context.TargetSolutionPath);
+            
+            ConsolidateProjectsToTarget(context);
+            GenerateSolutionFilters(context);
+            CleanupSourceSolutions(context);
+
+            Reporter.Success("Solution filter conversion completed successfully");
+            return ValueTask.FromResult(Unit.Value);
+        }
+
+        private void DiscoverSourceSolutions(Context context)
+        {
+            Reporter.Info("Discovering source solutions");
+
+            var solutionFiles = FileSystemHelper.GetFileNamesFromGlob(
+                context.Command.From,
+                Workspace.WorkingDirectory);
+
+            context.SourceSolutions.AddRange(
+                solutionFiles
+                    .Where(IsSolutionFileName)
+                    .Distinct()
+                    .OrderBy(p => p));
+
+            foreach (var solution in context.SourceSolutions)
+            {
+                Reporter.Info($"  Found: {Workspace.GetRelativePath(solution)}");
+            }
+        }
+
+        private void ExtractProjectsFromSources(Context context)
+        {
+            Reporter.Info("Extracting projects from source solutions");
+
+            foreach (var sourceSolution in context.SourceSolutions)
+            {
+                try
+                {
+                    var projects = GetProjectsFromSolution(sourceSolution);
+                    context.ProjectsBySource[sourceSolution] = projects;
+                    Reporter.Info($"  {Path.GetFileNameWithoutExtension(sourceSolution)}: {projects.Count} projects");
+                }
+                catch (Exception ex)
+                {
+                    Reporter.Error($"Failed to parse {sourceSolution}: {ex.Message}");
+                    throw new InvalidOperationException($"Failed to parse source solution '{sourceSolution}'. Aborting conversion.", ex);
+                }
+            }
+        }
+
+        private void CreateOrValidateTargetSolution(Context context)
+        {
+            if (!File.Exists(context.TargetSolutionPath))
+            {
+                Reporter.Info($"Creating target solution: {Workspace.GetRelativePath(context.TargetSolutionPath)}");
+                
+                if (!Workspace.IsDryRun)
+                {
+                    DotNetCliHelper.CreateSolution(context.TargetSolutionPath);
+                }
+            }
+            else
+            {
+                Reporter.Info($"Target solution already exists: {Workspace.GetRelativePath(context.TargetSolutionPath)}");
+            }
+        }
+
+        private void ConsolidateProjectsToTarget(Context context)
+        {
+            Reporter.Info("Adding projects to target solution");
+
+            using (Reporter.BeginScope("Projects"))
+            {
+                foreach (var sourceSolution in context.SourceSolutions)
+                {
+                    var solutionFolderName = Path.GetFileNameWithoutExtension(sourceSolution);
+                    var projects = context.ProjectsBySource[sourceSolution];
+
+                    foreach (var project in projects)
+                    {
+                        // Skip duplicate projects
+                        if (context.AddedProjects.Contains(project))
+                        {
+                            Reporter.Info($"  {Workspace.GetRelativePath(project)} (already added)");
+                            continue;
+                        }
+
+                        var projectRelativePath = Workspace.GetRelativePath(project);
+                        
+                        if (!Workspace.IsDryRun)
+                        {
+                            DotNetCliHelper.AddProjectToSolution(
+                                project,
+                                context.TargetSolutionPath,
+                                solutionFolderName);
+                        }
+
+                        context.AddedProjects.Add(project);
+                        Reporter.Success($"  {projectRelativePath} -> {solutionFolderName}");
+                    }
+                }
+            }
+        }
+
+        private void GenerateSolutionFilters(Context context)
+        {
+            Reporter.Info("Generating solution filter files");
+
+            foreach (var sourceSolution in context.SourceSolutions)
+            {
+                var filterFileName = Path.ChangeExtension(sourceSolution, ".slnf");
+                var projects = context.ProjectsBySource[sourceSolution];
+                var filterDir = Path.GetDirectoryName(filterFileName)!;
+
+                // Compute paths relative to the .slnf file location
+                var relativeSolutionPath = Path.GetRelativePath(filterDir, context.TargetSolutionPath);
+                var projectIncludePaths = projects
+                    .Select(p => Path.GetRelativePath(filterDir, p))
+                    .OrderBy(p => p)
+                    .ToList();
+
+                var filter = new SolutionFilterJson
+                {
+                    Solution = new SolutionElement
+                    {
+                        Path = relativeSolutionPath,
+                        Projects = projectIncludePaths
+                    }
+                };
+
+                if (!Workspace.IsDryRun)
+                {
+                    var json = JsonSerializer.Serialize(filter, new JsonSerializerOptions 
+                    { 
+                        WriteIndented = true,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
+                    File.WriteAllText(filterFileName, json);
+                }
+
+                Reporter.Success($"  {Workspace.GetRelativePath(filterFileName)}");
+            }
+        }
+
+        private void CleanupSourceSolutions(Context context)
+        {
+            Reporter.Info("Cleaning up source solution files");
+
+            foreach (var sourceSolution in context.SourceSolutions)
+            {
+                if (!Workspace.IsDryRun)
+                {
+                    File.Delete(sourceSolution);
+                }
+
+                Reporter.Success($"  Deleted {Workspace.GetRelativePath(sourceSolution)}");
+            }
+        }
+
+        private class Context
+        {
+            public Command Command { get; set; } = null!;
+            public List<string> SourceSolutions { get; set; } = null!;
+            public string TargetSolutionPath { get; set; } = null!;
+            public Dictionary<string, List<string>> ProjectsBySource { get; set; } = null!;
+            public HashSet<string> AddedProjects { get; set; } = null!;
+        }
+
+        private class SolutionFilterJson
+        {
+            public SolutionElement? Solution { get; set; }
+        }
+
+        private class SolutionElement
+        {
+            public string? Path { get; set; }
+            public List<string>? Projects { get; set; }
+        }
+    }
+}
